@@ -62,11 +62,11 @@
   $ git remote -v
   ```
   
-  Если вывод этой команды содержит `upstream https://github.com/zarechenskiy/kotlin-course-se`, то перейдите на шаг 4.
+  Если вывод этой команды содержит `upstream https://github.com/zarechenskiy/kotlin-course-se19`, то перейдите на шаг 4.
 3. Настройте git на синхронизацию с этим репозиторием:
 
   ```
-  $ git remote add upstream https://github.com/zarechenskiy/kotlin-course-se
+  $ git remote add upstream https://github.com/zarechenskiy/kotlin-course-se19
   ```
 4. Обновите свой форк:
 
