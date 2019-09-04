@@ -8,6 +8,6 @@ fun getGreeting(): String {
     return words.joinToString(separator = " ")
 }
 
-fun main(args: Array<String>) {
+fun main() {
     println(getGreeting())
 }
