@@ -12,7 +12,7 @@ mainClassName = 'ru.hse.spb.MainKt'
 
 defaultTasks 'run'
 
-run{
+run {
     standardInput = System.in
 }
 
