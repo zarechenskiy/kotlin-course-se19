@@ -2,10 +2,11 @@ package ru.hse.spb
 
 import java.lang.IllegalArgumentException
 import java.util.*
+import kotlin.collections.HashSet
 
 /** Vertex in graph. Contains ids of it's neighbours. */
 data class Vertex(
-    val neighbourIds: MutableList<Int> = mutableListOf(),
+    val neighbourIds: HashSet<Int> = hashSetOf(),
     var used: Boolean = false)
 
 /**
@@ -84,18 +85,18 @@ class Graph(size: Int) {
     }
 
     /** Recursive dfs function for finding a cycle. */
-    private fun findCycle(vertexId: Int, parentId: Int = -1): List<Int> {
+    private fun findCycle(vertexId: Int): List<Int> {
         if (vertices[vertexId].used) {
             return pathIds.drop(pathIds.indexOf(vertexId))
         }
-
+        val parentId = pathIds.lastOrNull()
         pathIds.add(vertexId)
         vertices[vertexId].used = true
 
         val childrenIds = vertices[vertexId].neighbourIds
             .filter { it != parentId }
         for (childId in childrenIds) {
-            val result = findCycle(vertexId = childId, parentId = vertexId)
+            val result = findCycle(vertexId = childId)
             if (result.isNotEmpty()) {
                 return result
             }
