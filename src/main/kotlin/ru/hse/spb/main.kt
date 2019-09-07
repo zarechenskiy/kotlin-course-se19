@@ -22,7 +22,7 @@ fun main() {
  * This class solves Codeforces 59C problem: https://codeforces.com/problemset/problem/59/C
  */
 class Solution private constructor(numberOfRequiredLetters: Int,
-                                           private val pattern: String) {
+                                   private val pattern: String) {
 
     private val requiredCharacterRange = FIRST_LETTER until FIRST_LETTER + numberOfRequiredLetters
     private val resultArray = Array(pattern.length) { ANY_LETTER }
