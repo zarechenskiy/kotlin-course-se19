@@ -4,8 +4,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.util.*
 
-// http://codeforces.com/contest/131/submission/60143264
-
 class TestTaskSolver {
 
     private fun test(input: String, output: String) {
