@@ -1,32 +1,42 @@
 package ru.hse.spb
 
-import java.io.FileReader
 import java.util.*
 
 const val LETTERS_IN_ENGLISH = 26
-val p = Array(LETTERS_IN_ENGLISH) { mutableListOf<Int>() }
 
-fun letterToInt(c : Char): Int {
+/**
+ * Converts english letters to it's indexes in the english alphabet (from 0) without
+ * boundary checks
+ */
+fun letterToIndex(c : Char): Int {
     return c - 'a'
 }
 
-fun intToLetter(i : Int) : Char {
+/**
+ * Converts an index in the english alphabet to the corresponding english letter
+ * without boundary checks
+ */
+fun indexToLetter(i : Int) : Char {
     return 'a' + i
 }
 
-fun main() {
-    val input = Scanner(FileReader("input.txt"))
+fun solveProblem() : String {
+    val result = StringBuilder()
+
+    val input = Scanner(System.`in`)
 
     input.use {
         val k = input.nextInt()
         input.nextLine()
         val s = input.nextLine()
 
-        var currentPos = 0
+        val lettersPositions = Array(LETTERS_IN_ENGLISH) { mutableListOf<Int>() }
+
+        var currentPosition = 0
         for (i in 1..k) {
             for (c in s) {
-                p[letterToInt(c)].add(currentPos)
-                currentPos++
+                lettersPositions[letterToIndex(c)].add(currentPosition)
+                currentPosition++
             }
         }
 
@@ -36,21 +46,27 @@ fun main() {
             val pos = input.nextInt()
             val letter = input.next()[0]
 
-            p[letterToInt(letter)].removeAt(pos - 1)
+            lettersPositions[letterToIndex(letter)].removeAt(pos - 1)
         }
 
         val resultName = CharArray(k * s.length)
 
         for (i in 0 until LETTERS_IN_ENGLISH) {
-            for (j in p[i]) {
-                resultName[j] = intToLetter(i)
+            for (j in lettersPositions[i]) {
+                resultName[j] = indexToLetter(i)
             }
         }
 
         for (c in resultName) {
             if (c != Character.MIN_VALUE) {
-                print(c)
+                result.append(c)
             }
         }
     }
+
+    return result.toString()
+}
+
+fun main() {
+    print(solveProblem())
 }
