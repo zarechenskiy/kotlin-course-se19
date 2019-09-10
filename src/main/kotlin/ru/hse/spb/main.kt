@@ -6,11 +6,11 @@ import java.io.PrintWriter
 import java.util.*
 
 private data class Station(
-    val id: Int,
-    val adjacentStations: MutableList<Station>,
-    var visited: Boolean = false,
-    var distanceToCircle: Int? = null
-)
+        val id: Int,
+        val adjacentStations: MutableList<Station>
+) {
+    var visited: Boolean = false
+}
 
 private fun readDataset(inputStream: InputStream): Array<Station> {
     val scanner = Scanner(inputStream)
@@ -34,14 +34,14 @@ private fun readDataset(inputStream: InputStream): Array<Station> {
 private fun dfs(station: Station, stationFrom: Station?, path: ArrayDeque<Station>): Boolean {
     path.addLast(station)
     station.visited = true
-    station.adjacentStations.forEach {
-        if (it != stationFrom) {
-            if (!it.visited) {
-                if (dfs(it, station, path)) {
+    for (stationNext in station.adjacentStations) {
+        if (stationNext != stationFrom) {
+            if (!stationNext.visited) {
+                if (dfs(stationNext, station, path)) {
                     return true
                 }
             } else {
-                path.addLast(it)
+                path.addLast(stationNext)
                 return true
             }
         }
@@ -56,34 +56,38 @@ private fun findCircle(station: Station): List<Station> {
     return path.dropWhile { it.id != path.last.id }
 }
 
-private fun computeDistancesToCircle(circle: List<Station>) {
+private fun computeDistancesToCircle(circle: List<Station>, stationCount: Int): Array<Int> {
+    val distancesToCircle = Array<Int?>(stationCount) { null }
+
     val bfsQueue = ArrayDeque<Station>()
     bfsQueue += circle
-    circle.forEach { it.distanceToCircle = 0 }
+    for (station in circle) {
+        distancesToCircle[station.id] = 0
+    }
 
     while (bfsQueue.isNotEmpty()) {
         val currentStation = bfsQueue.pop()
-        currentStation.adjacentStations.forEach {
-            if (it.distanceToCircle == null) {
-                it.distanceToCircle = currentStation.distanceToCircle!! + 1
-                bfsQueue += it
+        for (nextStation in currentStation.adjacentStations) {
+            if (distancesToCircle[nextStation.id] == null) {
+                distancesToCircle[nextStation.id] = distancesToCircle[currentStation.id]!! + 1
+                bfsQueue += nextStation
             }
         }
     }
+
+    return distancesToCircle.requireNoNulls()
 }
 
-private fun outputResult(stations: Array<Station>, outputStream: OutputStream) {
+private fun outputResult(distancesToCircle: Array<Int>, outputStream: OutputStream) {
     val writer = PrintWriter(outputStream)
-    writer.println(
-        stations.map { it.distanceToCircle!! }.joinToString(separator = " ")
-    )
+    writer.println(distancesToCircle.joinToString(separator = " "))
     writer.close()
 }
 
 fun executeSolution(inputStream: InputStream, outputStream: OutputStream) {
     val stations = readDataset(inputStream)
-    computeDistancesToCircle(findCircle(stations[0]))
-    outputResult(stations, outputStream)
+    val distancesToCircle = computeDistancesToCircle(findCircle(stations[0]), stations.size)
+    outputResult(distancesToCircle, outputStream)
 }
 
 fun main() {
