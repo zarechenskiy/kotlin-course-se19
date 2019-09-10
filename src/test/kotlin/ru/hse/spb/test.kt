@@ -3,10 +3,7 @@ package ru.hse.spb
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.io.ByteArrayOutputStream
-import java.io.File
 import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.util.*
 
 class TestSource {
 

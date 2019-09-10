@@ -6,8 +6,8 @@ import java.io.PrintWriter
 import java.util.*
 
 private data class Station(
-        val id: Int,
-        val adjacentStations: MutableList<Station>
+    val id: Int,
+    val adjacentStations: MutableList<Station>
 ) {
     var visited: Boolean = false
 }
