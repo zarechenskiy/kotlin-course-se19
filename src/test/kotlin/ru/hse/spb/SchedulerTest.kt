@@ -8,7 +8,7 @@ internal class SchedulerTest {
     @Test
     fun changeScheduleTest() {
         val k = 2
-        val costOfDelay = arrayOf(4, 2, 1, 10, 2)
+        val costOfDelay = listOf(4, 2, 1, 10, 2)
 
         val scheduler = Scheduler(costOfDelay)
 

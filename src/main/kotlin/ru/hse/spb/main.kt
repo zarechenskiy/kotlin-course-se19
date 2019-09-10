@@ -2,12 +2,12 @@ package ru.hse.spb
 
 import java.util.*
 
-
 fun main() {
-    val scanner = Scanner(System.`in`.buffered())
-    val flightsNumber = scanner.nextInt()
-    val shift = scanner.nextInt()
-    val costOfDelay = generateSequence { scanner.nextInt() }.take(flightsNumber).toList().toTypedArray()
+    val scanner = System.`in`.bufferedReader()
+    val line1 = scanner.readLine().split(" ").map { it.toInt() }
+    val shift = line1[1]
+
+    val costOfDelay = scanner.readLine().split(" ").map { it.toInt() }
 
     val scheduler = Scheduler(costOfDelay)
     val newSchedule = scheduler.changeSchedule(shift)
@@ -17,7 +17,7 @@ fun main() {
     println(newSchedule.joinToString(" "))
 }
 
-class Scheduler(private val costOfDelay: Array<Int>) {
+class Scheduler(private val costOfDelay: List<Int>) {
 
     private val flightsNumber = costOfDelay.size
 
