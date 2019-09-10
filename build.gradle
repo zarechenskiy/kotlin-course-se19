@@ -25,7 +25,7 @@ compileTestKotlin {
 
 jar {
     manifest {
-        attributes "Main-Class": "ru.hse.spb.MainKt"
+        attributes "Main-Class": "ru.hse.spb.GKt"
     }
 
     from {

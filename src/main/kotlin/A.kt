@@ -2,7 +2,7 @@ package ru.hse.spb
 
 /**
  * Object solver for problem A of (https://codeforces.com/contest/1211)
- * accepted submit: https://codeforces.com/contest/1211/submission/60338534
+ * submit: https://codeforces.com/contest/1211/submission/60338534
  * */
 object ProblemA {
     /**
