@@ -1,8 +1,12 @@
+package ru.hse.spb
+
+import java.io.InputStream
+import java.io.OutputStream
+import java.io.PrintWriter
 import java.math.BigInteger
 import java.util.Scanner
-
-fun main(args: Array<String>) {
-    val scan = Scanner(System.`in`)
+fun solveTask(input: InputStream, output: OutputStream) {
+    val scan = Scanner(input)
     val n = scan.nextInt()
     val arr = Array<Pair<Int, Pair<Int, Int>>>(n) { Pair(0, Pair(0, 0)) }
     for (i in 0 until n) arr[i] = Pair(i + 1, Pair(scan.nextInt(), scan.nextInt()))
@@ -16,7 +20,13 @@ fun main(args: Array<String>) {
             ans = Pair(arr[i].first, arr[(i + 1) % n].first)
         }
     }
-    println("${ans.first} ${ans.second}")
+    val writer = PrintWriter(output)
+    writer.print("${ans.first} ${ans.second}")
+    writer.close()
+}
+
+fun main(args: Array<String>) {
+    solveTask(System.`in`, System.out)
 }
 
 fun angleC(v1: Pair<Int, Int>, v2: Pair<Int, Int>): Pair<BigInteger, BigInteger> {
