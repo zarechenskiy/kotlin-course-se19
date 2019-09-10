@@ -86,7 +86,6 @@ class TestSource {
         }
         for (i in 1..(2 * n * n / 9)) {
             if (!values.contains(i)) {
-                println(i)
                 return false
             }
         }

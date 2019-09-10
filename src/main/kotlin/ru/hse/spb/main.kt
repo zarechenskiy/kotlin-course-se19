@@ -8,6 +8,14 @@ package ru.hse.spb
 data class Edge(val from: Int, val to: Int, var weight: Int = 0)
 
 /**
+ * Class for returning result from centroid searching dfs.
+ *
+ * If centroid is found, value is equal to centoid id
+ * Otherwise value is equal to subtree size
+ */
+class CentroidSearchResult(val centroidIsFound: Boolean, val value: Int)
+
+/**
  * Class for storing tree
  */
 class Tree(private val size: Int) {
@@ -15,7 +23,7 @@ class Tree(private val size: Int) {
 
     /** Adds bidirectional edge into graph */
     fun addEdge(aNode: Int, bNode: Int) {
-        adjacencyList[aNode].add(Edge(aNode, bNode));
+        adjacencyList[aNode].add(Edge(aNode, bNode))
         adjacencyList[bNode].add(Edge(bNode, aNode))
     }
 
@@ -24,38 +32,36 @@ class Tree(private val size: Int) {
      *
      * @param vertexId vertex to start search with
      * @param parent parent of current vertex. Default -1
-     * @return Pair<centroidIsFound, value>
-     *     If centroidIsFound = true then value equals to centroid number,
-     *     otherwise value equals to subtree size of current vertex.
+     * @return result of search as CentroidSearchResult instance
      *     It is guaranteed that after execution from root,
      *     centroid will be found (i.e. value is equal to centroid index and centroidIsFound = true)
      */
-    private fun findCentroidDfs(vertexId: Int, parent: Int = -1): Pair<Boolean, Int> {
+    private fun findCentroidDfs(vertexId: Int, parent: Int = -1): CentroidSearchResult {
         var subtreeSize = 1
         for (edge in adjacencyList[vertexId]) {
             if (edge.to != parent) {
-                val (centroidIsFound, value) = findCentroidDfs(edge.to, vertexId)
-                if (centroidIsFound) {
-                    return Pair(centroidIsFound, value)
+                val searchResult = findCentroidDfs(edge.to, vertexId)
+                if (searchResult.centroidIsFound) {
+                    return searchResult
                 }
-                subtreeSize += value
+                subtreeSize += searchResult.value
             }
         }
         if (subtreeSize * 2 >= size) {
-            return Pair(true, vertexId)
+            return CentroidSearchResult(true, vertexId)
         }
-        return Pair(false, subtreeSize)
+        return CentroidSearchResult(false, subtreeSize)
     }
 
     /** Returns centroid of a tree */
     fun findCentroid(): Int {
-        return findCentroidDfs(0).second
+        return findCentroidDfs(0).value
     }
 
     /** Returns subtree size of subtree with root {@code vertexId} and parent {@code parent}*/
     private fun getSubtreeSize(vertexId: Int, parent: Int = -1): Int {
         var size = 1
-        for (edge: Edge in adjacencyList[vertexId]) {
+        for (edge in adjacencyList[vertexId]) {
             if (edge.to != parent) {
                 size += getSubtreeSize(edge.to, vertexId)
             }
@@ -93,7 +99,7 @@ class Tree(private val size: Int) {
     fun paint(edge: Edge, currentWeight: Int, weightStep: Int, previousWeight: Int = 0): Int {
         edge.weight = currentWeight - previousWeight
         var lastWeight = currentWeight
-        for (nextEdge: Edge in adjacencyList[edge.to]) {
+        for (nextEdge in adjacencyList[edge.to]) {
             if (nextEdge.to != edge.from) {
                 lastWeight = paint(nextEdge, lastWeight + weightStep, weightStep,
                         currentWeight)
@@ -107,7 +113,7 @@ class Tree(private val size: Int) {
      * Each edge occurs only once
      */
     fun getSubtreeEdges(vertexId: Int, list: MutableList<Edge>, parent: Int = -1) {
-        for (edge: Edge in adjacencyList[vertexId]) {
+        for (edge in adjacencyList[vertexId]) {
             if (edge.to != parent) {
                 list.add(edge)
                 getSubtreeEdges(edge.to, list, vertexId)
@@ -119,7 +125,6 @@ class Tree(private val size: Int) {
 /** Solves the problem by given iterator to neighbours of centroid and tree */
 fun paintAlmostAll(n: Int, neighbours: Iterator<Edge>, tree: Tree) {
     var sum = 0
-    var neighbourId = 0
     while (sum * 3 < n + 1 && neighbours.hasNext()) {
         sum = tree.paint(neighbours.next(), sum + 1, 1)
     }
@@ -127,7 +132,6 @@ fun paintAlmostAll(n: Int, neighbours: Iterator<Edge>, tree: Tree) {
     while (neighbours.hasNext()) {
         sum = tree.paint(neighbours.next(), sum + 1, firstGroupSize + 1)
         sum += firstGroupSize
-        ++neighbourId
     }
 }
 
