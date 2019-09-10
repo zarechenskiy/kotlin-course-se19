@@ -8,20 +8,21 @@ import java.util.Scanner
 fun solveTask(input: InputStream, output: OutputStream) {
     val scan = Scanner(input)
     val n = scan.nextInt()
-    val arr = Array<Pair<Int, Pair<Int, Int>>>(n) { Pair(0, Pair(0, 0)) }
-    for (i in 0 until n) arr[i] = Pair(i + 1, Pair(scan.nextInt(), scan.nextInt()))
-    arr.sortWith((Comparator<Pair<Int, Pair<Int, Int>>> { x, y -> vectorsComp(x.second, y.second) }))
-    var max = Pair<BigInteger, BigInteger>(BigInteger.valueOf((-1).toLong()), BigInteger.ONE)
-    var ans = Pair(arr[0].first, arr[1].first)
+    val data = Array<Pair<Int, Pair<Int, Int>>>(n) { Pair(0, Pair(0, 0)) }
+    for (i in 0 until n) 
+        data[i] = Pair(i + 1, Pair(scan.nextInt(), scan.nextInt()))
+    data.sortWith((Comparator<Pair<Int, Pair<Int, Int>>> { x, y -> vectorsComp(x.second, y.second) }))
+    var maxCos = Pair<BigInteger, BigInteger>(BigInteger.valueOf((-1).toLong()), BigInteger.ONE)
+    var answer = Pair(data[0].first, data[1].first)
     for (i in 0 until n) {
-        val angleC = angleC(arr[i].second, arr[(i + 1) % n].second)
-        if (angleC.first * max.second > angleC.second * max.first) {
-            max = angleC
-            ans = Pair(arr[i].first, arr[(i + 1) % n].first)
+        val angleCos = angleCos(data[i].second, data[(i + 1) % n].second)
+        if (angleCos.first * maxCos.second > angleCos.second * maxCos.first) {
+            maxCos = angleCos
+            answer = Pair(data[i].first, data[(i + 1) % n].first)
         }
     }
     val writer = PrintWriter(output)
-    writer.print("${ans.first} ${ans.second}")
+    writer.print("${answer.first} ${answer.second}")
     writer.close()
 }
 
@@ -29,17 +30,17 @@ fun main(args: Array<String>) {
     solveTask(System.`in`, System.out)
 }
 
-fun angleC(v1: Pair<Int, Int>, v2: Pair<Int, Int>): Pair<BigInteger, BigInteger> {
-    val scProd = scProd(v1, v2)
-    return Pair(scProd * scProd * scProd.signum().toBigInteger(), module(v1) * module(v2))
+fun angleCos(v1: Pair<Int, Int>, v2: Pair<Int, Int>): Pair<BigInteger, BigInteger> {
+    val scalarProduct = scalarProduct(v1, v2)
+    return Pair(scalarProduct * scalarProduct * scalarProduct.signum().toBigInteger(), module(v1) * module(v2))
 }
 
-fun scProd(v1: Pair<Int, Int>, v2: Pair<Int, Int>): BigInteger {
+fun scalarProduct(v1: Pair<Int, Int>, v2: Pair<Int, Int>): BigInteger {
     return (v1.first * v2.first + v1.second * v2.second).toBigInteger()
 }
 
 fun module(v: Pair<Int, Int>): BigInteger {
-    return scProd(v, v)
+    return scalarProduct(v, v)
 }
 
 fun vectorsComp(v1: Pair<Int, Int>, v2: Pair<Int, Int>): Int {
