@@ -1,8 +1,6 @@
 package ru.hse.spb
 
-import java.lang.IllegalArgumentException
 import java.util.*
-import kotlin.collections.HashSet
 
 /** Vertex in graph. Contains ids of it's neighbours. */
 data class Vertex(
@@ -15,16 +13,10 @@ data class Vertex(
 class Graph(size: Int) {
 
     /** Vertices in the graph. */
-    private val vertices: MutableList<Vertex> = mutableListOf()
+    private val vertices = MutableList(size) { Vertex() }
 
     /** While searching for a cycle vertices in this list presents a path from the root. */
-    private val pathIds: MutableList<Int> = mutableListOf()
-
-    init {
-        for (i in 1..size) {
-            vertices.add(Vertex())
-        }
-    }
+    private val pathIds = mutableListOf<Int>()
 
     /**
      * Get size of the graph.
@@ -40,9 +32,7 @@ class Graph(size: Int) {
      * Throws otherwise.
      */
     private fun checkVertexId(id: Int) {
-        if (id < 0 || id >= vertices.size) {
-            throw IllegalArgumentException("Vertex id is out of range.")
-        }
+        require (0 <= id && id < vertices.size) { "Vertex id is out of range." }
     }
 
     /**
@@ -101,7 +91,7 @@ class Graph(size: Int) {
                 return result
             }
         }
-        pathIds.removeAt(pathIds.size - 1)
+        pathIds.removeAt(pathIds.lastIndex)
 
         return emptyList()
     }
@@ -133,7 +123,7 @@ fun createGraph(input: Scanner): Graph {
     val size = input.nextInt()
     val graph = Graph(size)
 
-    for (i in 1..size) {
+    repeat(size) {
         val id1 = input.nextInt() - 1
         val id2 = input.nextInt() - 1
         graph.addEdge(id1, id2)
