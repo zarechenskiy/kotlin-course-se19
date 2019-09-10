@@ -46,4 +46,61 @@ internal class MainKtTest {
         System.setIn(ByteArrayInputStream(inputData.toByteArray()))
         assertEquals("acb", solveProblem())
     }
+
+    @org.junit.jupiter.api.Test
+    fun SolveProblemInputTest2() {
+        val inputData = ByteArrayOutputStream()
+
+        inputData.use {
+            val printer = PrintWriter(inputData)
+            printer.use {
+                printer.println(1)
+                printer.println("abacaba")
+                printer.println(4)
+                printer.println("1 a")
+                printer.println("1 a")
+                printer.println("1 c")
+                printer.println("2 b")
+            }
+        }
+
+        System.setIn(ByteArrayInputStream(inputData.toByteArray()))
+        assertEquals("baa", solveProblem())
+    }
+
+    @org.junit.jupiter.api.Test
+    fun SolveProblemInputTest3() {
+        val inputData = ByteArrayOutputStream()
+
+        inputData.use {
+            val printer = PrintWriter(inputData)
+            printer.use {
+                printer.println(1)
+                printer.println("aa")
+                printer.println(1)
+                printer.println("1 a")
+            }
+        }
+
+        System.setIn(ByteArrayInputStream(inputData.toByteArray()))
+        assertEquals("a", solveProblem())
+    }
+
+    @org.junit.jupiter.api.Test
+    fun SolveProblemInputTest4() {
+        val inputData = ByteArrayOutputStream()
+
+        inputData.use {
+            val printer = PrintWriter(inputData)
+            printer.use {
+                printer.println(1)
+                printer.println("ab")
+                printer.println(1)
+                printer.println("1 b")
+            }
+        }
+
+        System.setIn(ByteArrayInputStream(inputData.toByteArray()))
+        assertEquals("a", solveProblem())
+    }
 }
