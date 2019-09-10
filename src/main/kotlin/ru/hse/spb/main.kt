@@ -8,7 +8,7 @@ const val LETTERS_IN_ENGLISH = 26
  * Converts english letters to it's indexes in the english alphabet (from 0) without
  * boundary checks
  */
-fun letterToIndex(c : Char): Int {
+fun letterToIndex(c: Char): Int {
     return c - 'a'
 }
 
@@ -16,11 +16,11 @@ fun letterToIndex(c : Char): Int {
  * Converts an index in the english alphabet to the corresponding english letter
  * without boundary checks
  */
-fun indexToLetter(i : Int) : Char {
+fun indexToLetter(i: Int): Char {
     return 'a' + i
 }
 
-fun solveProblem() : String {
+fun solveProblem(): String {
     val result = StringBuilder()
 
     val input = Scanner(System.`in`)

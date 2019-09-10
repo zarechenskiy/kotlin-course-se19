@@ -1,34 +1,35 @@
 package ru.hse.spb
 
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.PrintWriter
 
 internal class MainKtTest {
 
-    @org.junit.jupiter.api.Test
+    @Test
     fun letterToIndexOfAIsZero() {
         assertEquals(0, letterToIndex('a'))
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     fun letterToIndexOfZIsLetterInEnglish() {
         assertEquals(LETTERS_IN_ENGLISH - 1, letterToIndex('z'))
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     fun indexToLetterOf0IsA() {
         assertEquals('a', indexToLetter(0))
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     fun indexToLetterOf25IsZ() {
         assertEquals('z', indexToLetter(LETTERS_IN_ENGLISH - 1))
     }
 
-    @org.junit.jupiter.api.Test
-    fun SolveProblemInputTest1() {
+    @Test
+    fun solveProblemInputTest1() {
         val inputData = ByteArrayOutputStream()
 
         inputData.use {
@@ -47,8 +48,8 @@ internal class MainKtTest {
         assertEquals("acb", solveProblem())
     }
 
-    @org.junit.jupiter.api.Test
-    fun SolveProblemInputTest2() {
+    @Test
+    fun solveProblemInputTest2() {
         val inputData = ByteArrayOutputStream()
 
         inputData.use {
@@ -68,8 +69,8 @@ internal class MainKtTest {
         assertEquals("baa", solveProblem())
     }
 
-    @org.junit.jupiter.api.Test
-    fun SolveProblemInputTest3() {
+    @Test
+    fun solveProblemInputTest3() {
         val inputData = ByteArrayOutputStream()
 
         inputData.use {
@@ -86,8 +87,8 @@ internal class MainKtTest {
         assertEquals("a", solveProblem())
     }
 
-    @org.junit.jupiter.api.Test
-    fun SolveProblemInputTest4() {
+    @Test
+    fun solveProblemInputTest4() {
         val inputData = ByteArrayOutputStream()
 
         inputData.use {
