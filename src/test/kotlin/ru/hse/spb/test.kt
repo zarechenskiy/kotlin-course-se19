@@ -7,12 +7,12 @@ class TestSource {
 
     @Test
     fun test51BSample1() {
-        assertEquals("1 ", getAnswer("<table><tr><td></td></tr></table>"))
+        assertEquals("1 ", Main().getAnswer("<table><tr><td></td></tr></table>"))
     }
 
     @Test
     fun test51BSample2() {
-        assertEquals("1 4 ", getAnswer("""<table>
+        assertEquals("1 4 ", Main().getAnswer("""<table>
 <tr>
 <td>
 <table><tr><td></td></tr><tr><td></
@@ -27,7 +27,7 @@ td
 
     @Test
     fun test51BSample3() {
-        assertEquals("1 1 1 3 ", getAnswer("""<table><tr><td>
+        assertEquals("1 1 1 3 ", Main().getAnswer("""<table><tr><td>
 <table><tr><td>
 <table><tr><td>
 <table><tr><td></td><td></td>

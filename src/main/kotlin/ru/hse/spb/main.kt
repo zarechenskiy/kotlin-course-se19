@@ -1,49 +1,67 @@
 package ru.hse.spb
 
 import java.lang.AssertionError
+class Main {
+    private val answerArray: ArrayList<Int> = ArrayList()
+    private var currentPosition: Int = 0
 
-val answerArray: ArrayList<Int> = ArrayList()
-var currentPosition: Int = 0
+    private fun processAnswerFromTd(input: String): Int {
+        var ans = 0
+        val td = "<td>"
+        val tdClosed = "</td>"
 
-fun getAnswerFromTd(input: String): Int {
-    var ans = 0
-    while (input.drop(currentPosition).startsWith("<td>")) {
-        currentPosition += 4
-        getAnswerFromTable(input)
-        ans++
-        if (!input.drop(currentPosition).startsWith("</td>")) {
-            throw AssertionError()
+        while (input.drop(currentPosition).startsWith(td)) {
+            currentPosition += td.length
+            processAnswerFromTable(input)
+            ans++
+            if (!input.drop(currentPosition).startsWith(tdClosed)) {
+                throw AssertionError("couldn't pair $td")
+            }
+            currentPosition += tdClosed.length
         }
-        currentPosition += 5
+        return ans
     }
-    return ans
-}
 
-fun getAnswerFromTr(input: String): Int {
-    var ans = 0
-    while (input.drop(currentPosition).startsWith("<tr>")) {
-        currentPosition += 4
-        ans += getAnswerFromTd(input)
-        if (!input.drop(currentPosition).startsWith("</tr>")) {
-            throw AssertionError()
+    private fun processAnswerFromTr(input: String): Int {
+        var ans = 0
+        val tr = "<tr>"
+        val trClosed = "</tr>"
+        while (input.drop(currentPosition).startsWith(tr)) {
+            currentPosition += tr.length
+            ans += processAnswerFromTd(input)
+            if (!input.drop(currentPosition).startsWith(trClosed)) {
+                throw AssertionError("couldn't pair $tr")
+            }
+            currentPosition += trClosed.length
         }
-        currentPosition += 5
+        return ans
     }
-    return ans
-}
 
-fun getAnswerFromTable(input: String): Int {
-    var ans = 0
-    if (input.drop(currentPosition).startsWith("<table>")) {
-        currentPosition += 7
-        ans = getAnswerFromTr(input)
-    } else return ans
-    if (!input.drop(currentPosition).startsWith("</table>")) {
-        throw AssertionError()
+    private fun processAnswerFromTable(input: String): Int {
+        var ans = 0
+        val table = "<table>"
+        val tableClosed = "</table>"
+        if (input.drop(currentPosition).startsWith(table)) {
+            currentPosition += table.length
+            ans = processAnswerFromTr(input)
+        } else return ans
+        if (!input.drop(currentPosition).startsWith(tableClosed)) {
+            throw AssertionError("couldn't pair $table")
+        }
+        currentPosition += tableClosed.length
+        answerArray.add(ans)
+        return 0
     }
-    currentPosition += 8
-    answerArray.add(ans)
-    return 0
+
+    // for tests
+    fun getAnswer(input: String): String {
+        answerArray.clear()
+        currentPosition = 0
+        processAnswerFromTable(input.filter { it != '\n' })
+        var answer = String()
+        answerArray.sorted().forEach { ans -> answer += ans; answer += " " }
+        return answer
+    }
 }
 
 fun main() {
@@ -53,16 +71,6 @@ fun main() {
         input += nextLine
         nextLine = readLine()
     }
-    getAnswerFromTable(input)
-    answerArray.sorted().forEach { ans -> print(ans); print(" ") }
-}
-
-// for tests
-fun getAnswer(input: String): String {
-    answerArray.clear()
-    currentPosition = 0
-    getAnswerFromTable(input.filter { it != '\n' })
-    var answer = String()
-    answerArray.sorted().forEach { ans -> answer += ans; answer += " " }
-    return answer
+    val mainObject = Main()
+    print(mainObject.getAnswer(input))
 }
