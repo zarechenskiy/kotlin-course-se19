@@ -4,14 +4,13 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.io.PrintWriter
 import java.util.*
-import java.util.stream.Collectors
 
 
 typealias Vertex = Int
 typealias Graph = Map<Vertex, List<Vertex>>
 
 
-fun findClosedPathImpl(
+private fun findClosedPathImpl(
     currentVertex: Vertex,
     previousVertex: Vertex?,
     visitedVertex: MutableSet<Vertex>,
@@ -19,7 +18,7 @@ fun findClosedPathImpl(
     graph: Graph
 ): List<Vertex>? {
     path.add(currentVertex)
-    if (visitedVertex.contains(currentVertex)) {
+    if (currentVertex in visitedVertex) {
         return path
     }
     visitedVertex.add(currentVertex)
@@ -28,7 +27,7 @@ fun findClosedPathImpl(
         val rec = findClosedPathImpl(neighbour, currentVertex, visitedVertex, path, graph)
         if (rec != null) return rec
     }
-    path.removeAt(path.size - 1)
+    path.removeAt(path.lastIndex)
     return null
 }
 
@@ -39,20 +38,20 @@ fun findClosedPath(startVertex: Vertex, graph: Graph): List<Vertex>? {
 fun extractCycleFromClosedPath(path: List<Vertex>): Set<Vertex> {
     val cycle = mutableSetOf<Vertex>()
     for (vertex in path.reversed()) {
-        if (cycle.contains(vertex)) break
+        if (vertex in cycle) break
         cycle.add(vertex)
     }
     return cycle
 }
 
-fun findDistancesImpl(
+private fun findDistancesImpl(
     currentVertex: Vertex,
     previousVertex: Vertex?, cycle: Set<Vertex>, distances: MutableMap<Vertex, Int>, currentDistance: Int, graph: Graph
 ) {
     distances[currentVertex] = currentDistance
     for (neighbour in graph.getValue(currentVertex)) {
         if (neighbour == previousVertex) continue
-        if (cycle.contains(neighbour)) continue
+        if (neighbour in cycle) continue
         findDistancesImpl(neighbour, currentVertex, cycle, distances, currentDistance + 1, graph)
     }
 }
@@ -86,12 +85,9 @@ fun parseInput(inputStream: InputStream): Graph {
 }
 
 fun putResult(distances: Map<Vertex, Int>, stream: OutputStream) {
-    val writer = PrintWriter(stream)
-    writer.use {
-        writer.println(
-            distances.entries.stream().sorted(compareBy(Map.Entry<Vertex, Int>::key)).map(Map.Entry<Vertex, Int>::value).map(
-                Int::toString
-            ).collect(Collectors.joining(" "))
+    PrintWriter(stream).use {
+        it.println(
+            distances.entries.sortedBy { it.key }.map { it.value }.joinToString(separator = " ")
         )
     }
 }
