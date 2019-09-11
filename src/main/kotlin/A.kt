@@ -6,27 +6,27 @@ package ru.hse.spb
  * */
 object ProblemA {
     /**
-     * @param r is the complexity of the tasks
+     * @param ratings is the complexity of the tasks
      * @return triple according to the statement of the problem
      * (https://codeforces.com/contest/1211/problem/A)
      * */
-    fun solve(r: IntArray): Pair<Pair<Int, Int>, Int> {
-        val n = r.size
+    fun solve(ratings: List<Int>): Pair<Pair<Int, Int>, Int> {
+        val tasksNumber = ratings.size
         var maxIndex = -1
         var minIndex = -1
-        for (i in 0 until n) {
-            if (maxIndex == -1 || r[i] > r[maxIndex]) {
+        for (i in 0 until tasksNumber) {
+            if (maxIndex == -1 || ratings[i] > ratings[maxIndex]) {
                 maxIndex = i
             }
-            if (minIndex == -1 || r[i] < r[minIndex]) {
+            if (minIndex == -1 || ratings[i] < ratings[minIndex]) {
                 minIndex = i
             }
         }
-        for (i in 0 until n) {
+        for (i in 0 until tasksNumber) {
             if (i == minIndex || i == maxIndex) {
                 continue
             }
-            if (r[minIndex] < r[i] && r[i] < r[maxIndex]) {
+            if (ratings[minIndex] < ratings[i] && ratings[i] < ratings[maxIndex]) {
                 return Pair(Pair(minIndex + 1, i + 1), maxIndex + 1)
             }
         }
@@ -36,7 +36,7 @@ object ProblemA {
 
 fun main() {
     readLine()!!.toInt()
-    val r: IntArray = readLine()!!.split(" ").map { it.toInt() }.toIntArray()
-    val result = ProblemA.solve(r)
+    val ratings: List<Int> = readLine()!!.split(" ").map { it.toInt() }
+    val result = ProblemA.solve(ratings)
     println("${result.first.first} ${result.first.second} ${result.second}")
 }
