@@ -14,7 +14,8 @@ class SolverTest {
                         arrayOf(2, 3).toIntArray(),
                         arrayOf(1, 2, 2).toIntArray(),
                         arrayOf(2, 1).toIntArray()
-                )
+                ),
+                IntArray(4)
         )
         solver.solve()
         assertArrayEquals(arrayOf(3, 2, 3, 4).toIntArray(), solver.ans)
@@ -30,7 +31,8 @@ class SolverTest {
                         arrayOf(1, 2, 0).toIntArray(),
                         arrayOf(2, 8).toIntArray(),
                         arrayOf(1, 3, 20).toIntArray()
-                )
+                ),
+                IntArray(5)
         )
         solver.solve()
         assertArrayEquals(arrayOf(8, 8, 20, 8, 10).toIntArray(), solver.ans)
