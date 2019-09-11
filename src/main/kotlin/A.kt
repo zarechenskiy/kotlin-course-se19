@@ -1,5 +1,11 @@
 package ru.hse.spb
 
+data class Triple(val first: Int, val second: Int, val third: Int) {
+    override fun toString(): String {
+        return "$first $second $third"
+    }
+}
+
 /**
  * Object solver for problem A of (https://codeforces.com/contest/1211)
  * submit: https://codeforces.com/contest/1211/submission/60338534
@@ -10,7 +16,7 @@ object ProblemA {
      * @return triple according to the statement of the problem
      * (https://codeforces.com/contest/1211/problem/A)
      * */
-    fun solve(ratings: List<Int>): Pair<Pair<Int, Int>, Int> {
+    fun solve(ratings: List<Int>): Triple {
         val tasksNumber = ratings.size
         var maxIndex = -1
         var minIndex = -1
@@ -27,10 +33,10 @@ object ProblemA {
                 continue
             }
             if (ratings[minIndex] < ratings[i] && ratings[i] < ratings[maxIndex]) {
-                return Pair(Pair(minIndex + 1, i + 1), maxIndex + 1)
+                return Triple(minIndex + 1, i + 1, maxIndex + 1)
             }
         }
-        return Pair(Pair(-1, -1), -1)
+        return Triple(-1, -1, -1)
     }
 }
 
@@ -38,5 +44,5 @@ fun main() {
     readLine()!!.toInt()
     val ratings: List<Int> = readLine()!!.split(" ").map { it.toInt() }
     val result = ProblemA.solve(ratings)
-    println("${result.first.first} ${result.first.second} ${result.second}")
+    println(result)
 }

@@ -2,28 +2,31 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import ru.hse.spb.ProblemA
+import ru.hse.spb.Triple
 
 class ProblemATest {
 
-    private fun check(r: List<Int>, result: Pair<Pair<Int, Int>, Int>): Boolean {
-        val n = r.size
-        val (a, b) = result.first
-        val c = result.second
-        if (a < 1 || a > n || b < 1 || b > n || c < 1 || c > n) {
+    private fun check(ratings: List<Int>, result: Triple): Boolean {
+        val tasksNumber = ratings.size
+        val (leftIndex, middleIndex, rightIndex) = result
+        if (leftIndex < 1 || leftIndex > tasksNumber
+            || middleIndex < 1 || middleIndex > tasksNumber
+            || rightIndex < 1 || rightIndex > tasksNumber) {
             return false
         }
-        if (a == b || a == c || b == c) {
+        if (leftIndex == middleIndex || leftIndex == rightIndex || middleIndex == rightIndex) {
             return false
         }
-        return r[a - 1] < r[b - 1] && r[b - 1] < r[c - 1]
+        return ratings[leftIndex - 1] < ratings[middleIndex - 1]
+                && ratings[middleIndex - 1] < ratings[rightIndex - 1]
     }
 
-    private fun validate(r: List<Int>, isSolutionExists: Boolean = true) {
-        val result = ProblemA.solve(r)
+    private fun validate(ratings: List<Int>, isSolutionExists: Boolean = true) {
+        val result = ProblemA.solve(ratings)
         if (isSolutionExists) {
-            assertTrue(check(r, result))
+            assertTrue(check(ratings, result))
         } else {
-            assertEquals(Pair(Pair(-1, -1), -1), result)
+            assertEquals(Triple(-1, -1, -1), result)
         }
     }
 
