@@ -8,17 +8,17 @@ import kotlin.collections.ArrayList
  * submit: https://codeforces.com/contest/1211/submission/60341575
  * */
 class Tree (
-    private var vertexNumber: Int,
-    private var colors: IntArray,
-    private var targetColors: IntArray,
-    private var edges: ArrayList<Pair<Int, Int>>
+    private val vertexNumber: Int,
+    private val colors: IntArray,
+    private val targetColors: IntArray,
+    private val edges: ArrayList<Pair<Int, Int>>
 ) {
     private var arcs: Array<TreeSet<Int>> = emptyArray()
 
     /**
      * Clears and initializes lists of the adjacency lists for all vertices
      * */
-    private fun initArcs() {
+    private fun rebuildArcsByEdges() {
         arcs = Array(vertexNumber) { TreeSet<Int>() }
         for (v in 0 until vertexNumber) {
             arcs[v].clear()
@@ -83,7 +83,7 @@ class Tree (
      * @return the path from {@code fr} to {@code to}
      * */
     private fun getPath(fr: Int, to: Int): List<Int> {
-        initArcs()
+        rebuildArcsByEdges()
         val used = BooleanArray(vertexNumber) { false }
         val from = IntArray(vertexNumber) { -1 }
         val queue = LinkedList<Int>()
@@ -137,7 +137,7 @@ class Tree (
         if (colors.contentEquals(targetColors)) {
             return emptyList()
         }
-        initArcs()
+        rebuildArcsByEdges()
         removeRealisedLeafs()
         var firstLeaf: Int? = null
         var secondLeaf: Int? = null
