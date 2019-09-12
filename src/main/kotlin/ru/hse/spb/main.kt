@@ -1,3 +1,5 @@
+package ru.hse.spb
+
 import java.lang.IllegalStateException
 import java.lang.IndexOutOfBoundsException
 import java.util.*
