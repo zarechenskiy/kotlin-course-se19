@@ -28,10 +28,10 @@ class TestSource {
                 else -> listOf(v - 1, v + 1)
             }
         }
-        val universities = MutableList(n) { it }
+        val universities = List(n) { it }
 
         val m = (n / 2).toLong()
-        val answer = m * (m - 1)
+        val answer = m * m
 
         assertEquals(answer, maximalRoadsLength(edgeList, universities))
     }
