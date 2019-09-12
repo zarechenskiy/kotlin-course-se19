@@ -12,14 +12,14 @@ fun readEdgeList(vertexNumber: Int, edgeNumber: Int): Array<MutableList<Int>> {
     return edgeList
 }
 
-fun maximalRoadsLength(edgeList: Array<MutableList<Int>>, universities: List<Int>): Long {
+fun maximalRoadsLength(edgeList: Array<out List<Int>>, universities: List<Int>): Long {
     val solver = MaximalRoadsLengthFinder(edgeList, universities)
     return solver.solveProblem()
 }
 
-class MaximalRoadsLengthFinder private constructor(private val edgeList: Array<MutableList<Int>>, private val universities: List<Int>, private val subCount : IntArray, private val isUniversity: BooleanArray) {
+class MaximalRoadsLengthFinder private constructor(private val edgeList: Array<out List<Int>>, private val universities: List<Int>, private val subCount : IntArray, private val isUniversity: BooleanArray) {
 
-    constructor(edgeList: Array<MutableList<Int>>, universities: List<Int>) : this(edgeList, universities, IntArray(edgeList.size), BooleanArray(edgeList.size)) {
+    constructor(edgeList: Array<out List<Int>>, universities: List<Int>) : this(edgeList, universities, IntArray(edgeList.size), BooleanArray(edgeList.size)) {
         universities.forEach { subCount[it] = 1 }
         universities.forEach { isUniversity[it] = true }
     }
@@ -80,7 +80,7 @@ class MaximalRoadsLengthFinder private constructor(private val edgeList: Array<M
 
 
 fun main() {
-    val (n, k) = readLine()!!.split(' ').map(String::toInt)
+    val (n, _) = readLine()!!.split(' ').map(String::toInt)
     val universities = readLine()!!.split(' ').map { it.toInt() - 1 }
     val edgeList = readEdgeList(n, n - 1)
 
