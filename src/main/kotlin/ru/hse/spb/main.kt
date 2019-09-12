@@ -12,72 +12,77 @@ fun readEdgeList(vertexNumber: Int, edgeNumber: Int): Array<MutableList<Int>> {
     return edgeList
 }
 
-fun minimalRoadsLength(edgeList: Array<MutableList<Int>>, universities: List<Int>, isUniversity: BooleanArray): Int {
-    val n = edgeList.size
-    val subLength = IntArray(n)
-    val subCount = IntArray(n)
-
-    universities.forEach { subCount[it] = 1 }
-
-    calculateSubtreeParams(0, -1, edgeList, subLength, subCount)
-    val v = findBestAnswer(0, -1, edgeList, universities.size, subLength, subCount, 0)
-    return sumDistances(v, -1, 0, edgeList, isUniversity)
+fun maximalRoadsLength(edgeList: Array<MutableList<Int>>, universities: List<Int>): Long {
+    val solver = MaximalRoadsLengthFinder(edgeList, universities)
+    return solver.solveProblem()
 }
 
-fun calculateSubtreeParams(v: Int, parent: Int, edgeList: Array<MutableList<Int>>, subLength: IntArray, subCount: IntArray) {
-    for (u in edgeList[v]) {
-        if (u == parent) {
-            continue
+class MaximalRoadsLengthFinder private constructor(private val edgeList: Array<MutableList<Int>>, private val universities: List<Int>, private val subCount : IntArray, private val isUniversity: BooleanArray) {
+
+    constructor(edgeList: Array<MutableList<Int>>, universities: List<Int>) : this(edgeList, universities, IntArray(edgeList.size), BooleanArray(edgeList.size)) {
+        universities.forEach { subCount[it] = 1 }
+        universities.forEach { isUniversity[it] = true }
+    }
+
+    fun solveProblem() : Long {
+        calculateSubtreeParams(0, -1)
+        val v = findBestAnswer(0, -1)
+        return sumDistances(v, -1, 0)
+    }
+
+    private fun calculateSubtreeParams(v: Int, parent: Int) {
+        for (u in edgeList[v]) {
+            if (u == parent) {
+                continue
+            }
+            calculateSubtreeParams(u, v)
+            subCount[v] += subCount[u]
         }
-        calculateSubtreeParams(u, v, edgeList, subLength, subCount)
-        subCount[v] += subCount[u]
-        subLength[v] += subLength[u] + subCount[u]
+    }
+
+    private fun findBestAnswer(v: Int, parent: Int) : Int {
+        val universitiesCount = universities.size
+        var maxSubtreeSize = universitiesCount - subCount[v] // count of vertices up from v
+        for (u in edgeList[v]) {
+            if (u == parent) {
+                continue
+            }
+            maxSubtreeSize = max(maxSubtreeSize, subCount[u])
+        }
+        if (maxSubtreeSize * 2 <= universitiesCount) {
+            return v
+        }
+
+        for (u in edgeList[v]) {
+            if (u == parent) {
+                continue
+            }
+            val t = findBestAnswer(u, v)
+            if (t != -1) {
+                return t
+            }
+        }
+        return -1
+    }
+
+    private fun sumDistances(v : Int, parent : Int, depth : Int) : Long {
+        var ans : Long = if (isUniversity[v]) depth.toLong() else 0
+        for (u in edgeList[v]) {
+            if (u == parent) {
+                continue
+            }
+            ans += sumDistances(u, v, depth + 1)
+        }
+        return ans
     }
 }
 
-fun findBestAnswer(v: Int, parent: Int, edgeList: Array<MutableList<Int>>, universitiesCount: Int, subLength: IntArray, subCount: IntArray, upLength: Int) : Int {
 
-    var maxSubtreeSize = universitiesCount - subCount[v] // count of vertices up from v
-    for (u in edgeList[v]) {
-        if (u == parent) {
-            continue
-        }
-        maxSubtreeSize = max(maxSubtreeSize, subCount[u])
-    }
-    if (maxSubtreeSize * 2 <= universitiesCount) {
-        return v
-    }
-
-    for (u in edgeList[v]) {
-        if (u == parent) {
-            continue
-        }
-        val t = findBestAnswer(u, v, edgeList, universitiesCount, subLength, subCount, upLength)
-        if (t != -1) {
-            return t
-        }
-    }
-    return -1
-}
-
-fun sumDistances(v : Int, parent : Int, depth : Int, edgeList : Array<MutableList<Int>>, isUniversity : BooleanArray) : Int {
-    var ans = if (isUniversity[v]) depth else 0
-    for (u in edgeList[v]) {
-        if (u == parent) {
-            continue
-        }
-        ans += sumDistances(u, v, depth + 1, edgeList, isUniversity)
-    }
-    return ans
-}
 
 fun main() {
     val (n, k) = readLine()!!.split(' ').map(String::toInt)
     val universities = readLine()!!.split(' ').map { it.toInt() - 1 }
     val edgeList = readEdgeList(n, n - 1)
 
-    val isUniversity = BooleanArray(n)
-    universities.forEach { isUniversity[it] = true }
-
-    println(minimalRoadsLength(edgeList, universities, isUniversity))
+    println(maximalRoadsLength(edgeList, universities))
 }
