@@ -30,12 +30,11 @@ class MaximalRoadsLengthFinder private constructor(private val edgeList: Array<o
         return sumDistances(v, -1, 0)
     }
 
-    private fun doForChildren(v : Int, parent : Int, whatToDo : (Int) -> Unit) {
-        edgeList[v].forEach { if (it != parent) whatToDo(it) }
-    }
-
     private fun calculateSubtreeParams(v: Int, parent: Int) {
-        doForChildren(v, parent) {u ->
+        for (u in edgeList[v]) {
+            if (u == parent) {
+                continue
+            }
             calculateSubtreeParams(u, v)
             subCount[v] += subCount[u]
         }
@@ -44,7 +43,12 @@ class MaximalRoadsLengthFinder private constructor(private val edgeList: Array<o
     private fun findBestAnswer(v: Int, parent: Int) : Int {
         val universitiesCount = universities.size
         var maxSubtreeSize = universitiesCount - subCount[v] // count of vertices up from v
-        doForChildren(v, parent) { maxSubtreeSize = max(maxSubtreeSize, subCount[it]) }
+        for (u in edgeList[v]) {
+            if (u == parent) {
+                continue
+            }
+            maxSubtreeSize = max(maxSubtreeSize, subCount[u])
+        }
         if (maxSubtreeSize * 2 <= universitiesCount) {
             return v
         }
@@ -63,11 +67,15 @@ class MaximalRoadsLengthFinder private constructor(private val edgeList: Array<o
 
     private fun sumDistances(v : Int, parent : Int, depth : Int) : Long {
         var ans : Long = if (isUniversity[v]) depth.toLong() else 0
-        doForChildren(v, parent) { ans += sumDistances(it, v, depth + 1) }
+        for (u in edgeList[v]) {
+            if (u == parent) {
+                continue
+            }
+            ans += sumDistances(u, v, depth + 1)
+        }
         return ans
     }
 }
-
 
 
 fun main() {
