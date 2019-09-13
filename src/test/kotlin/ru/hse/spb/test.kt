@@ -19,7 +19,7 @@ class TestSource {
                 "-1 -1\n" +
                 "-1 0"
         val expectedAnswer = 3.729935587093555327
-        assertTrue(checkAnswer(solve(Scanner(sample)), expectedAnswer))
+        assertTrue(checkAnswer(expectedAnswer, solve(Scanner(sample))))
     }
 
     @Test
@@ -29,7 +29,7 @@ class TestSource {
                 "-50 0\n" +
                 "50 0"
         val expectedAnswer = 11.547005383792516398
-        assertTrue(checkAnswer(solve(Scanner(sample)), expectedAnswer))
+        assertTrue(checkAnswer(expectedAnswer, solve(Scanner(sample))))
     }
 
 }
