@@ -5,6 +5,8 @@ import java.util.*
 import kotlin.math.abs
 import kotlin.math.sqrt
 
+private const val EPS = 1e-9
+
 data class Vector2(val x: Number, val y: Number) {
     operator fun plus(v2: Vector2) = Vector2(
             v2.x.toDouble() + x.toDouble(),
@@ -17,9 +19,7 @@ data class Vector2(val x: Number, val y: Number) {
     )
 
     val length: Double
-        get() {
-            return sqrt(x.toDouble() * x.toDouble() + y.toDouble() * y.toDouble())
-        }
+        get() = sqrt(x.toDouble() * x.toDouble() + y.toDouble() * y.toDouble())
 
     operator fun times(t: Number) = Vector2(
             t.toDouble() * x.toDouble(), t.toDouble() * y.toDouble()
@@ -36,13 +36,12 @@ data class Vector2(val x: Number, val y: Number) {
 
 class Wind(val direction: Vector2, val timeStart: Double, val timeEnd: Double)
 
-fun binarySearch(from: Double, to: Double, criterion: (Double) -> Double,
-                 eps: Double = 0.0000001): Double {
+fun binarySearch(from: Double, to: Double, criterion: (Double) -> Double): Double {
     var curFrom = from
     var curTo = to
     var curValue = (curFrom + curTo) / 2
     var curCriterion = criterion(curValue)
-    while (abs(curCriterion) > eps) {
+    while (abs(curCriterion) > EPS) {
         curValue = (curFrom + curTo) / 2
         curCriterion = criterion(curValue)
         if (curCriterion > 0) {
@@ -56,9 +55,10 @@ fun binarySearch(from: Double, to: Double, criterion: (Double) -> Double,
 
 data class TaskInput(val from: Vector2, val to: Vector2, val maxSpeed: Int, val winds: List<Wind>)
 
-class TaskSolver(private val taskInput: TaskInput,
-                 val minDistance: Double = 0.0,
-                 val maxDistance: Double = 1e9) {
+class TaskSolver(private val taskInput: TaskInput) {
+    private val minDistance = 0.0
+    private val maxDistance = 1e9
+
     fun solve(): Double {
         val criterion = { time: Double ->
             var windCoordinates = taskInput.from
@@ -72,8 +72,7 @@ class TaskSolver(private val taskInput: TaskInput,
             }
             (taskInput.to - windCoordinates).length - taskInput.maxSpeed * time
         }
-        val time = binarySearch(minDistance, maxDistance, criterion)
-        return time
+        return binarySearch(minDistance, maxDistance, criterion)
     }
 }
 
