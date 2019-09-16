@@ -14,11 +14,11 @@ class SubwayGraph {
                                var onCycle: Boolean = false,
                                var parentIdOnTraversePath: Station? = null)
 
-    private val stations: MutableMap<Int, Station> = HashMap()
-    private val adjacentStations: MutableMap<Int, MutableList<Station>> = HashMap()
+    private val stations: MutableMap<Int, Station> = mutableMapOf()
+    private val adjacentStations: MutableMap<Int, MutableList<Station>> = mutableMapOf()
 
-    fun addStationIfNotExist(vararg stationIds: Int) {
-        stationIds.forEach { id -> stations.putIfAbsent(id, Station(id)) }
+    fun addStationIfNotExist(id: Int) {
+        stations.putIfAbsent(id, Station(id))
     }
 
     fun addNotDirectedTransition(firstStationId: Int, secondStationId: Int) {
@@ -27,7 +27,8 @@ class SubwayGraph {
     }
 
     fun addDirectedTransitions(fromId: Int, toId: Int) {
-        addStationIfNotExist(fromId, toId)
+        addStationIfNotExist(fromId)
+        addStationIfNotExist(toId)
 
         val toStation = stations[toId]
         adjacentStations.putIfAbsent(fromId, ArrayList())
@@ -35,11 +36,15 @@ class SubwayGraph {
     }
 
     fun getDistancesFromRingStations(): Map<Int, Int> {
+        if (stations.isEmpty()) {
+            return Collections.emptyMap()
+        }
+
         val distancesFromRing = HashMap<Int, Int>()
         markRingStationsDfs(stations.values.first())
         stations.values
                 .filter { station -> station.onCycle }
-                .forEach { station -> distancesFromRing.putAll(getDistancesFromRingStation(station)) }
+                .forEach { station -> distancesFromRing += getDistancesFromRingStation(station) }
         return distancesFromRing
     }
 
@@ -53,8 +58,8 @@ class SubwayGraph {
                 .filter { adjacentStation -> adjacentStation.id != previousStation?.id }
                 .filterNot { adjacentStation -> adjacentStation.onCycle}
                 .forEach { adjacentStation ->
-                    distances.putAll(getDistancesFromRingStation(adjacentStation,
-                            currentStation, currentDistance + 1)) }
+                    distances += getDistancesFromRingStation(adjacentStation,
+                            currentStation, currentDistance + 1) }
         return distances
     }
 
@@ -109,7 +114,7 @@ fun readSubwayGraph(): SubwayGraph {
     val graph = SubwayGraph()
 
     val transitionsCount = scanner.nextInt()
-    for (i in 1..transitionsCount) {
+    repeat (transitionsCount) {
         graph.addNotDirectedTransition(scanner.nextInt(), scanner.nextInt())
     }
 
