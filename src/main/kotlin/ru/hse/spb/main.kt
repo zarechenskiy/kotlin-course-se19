@@ -22,9 +22,12 @@ class MaximalRoadsLengthFinder(private val edgeList: Array<List<Int>>, private v
     private val subCount = IntArray(edgeList.size)
     private val isUniversity = BooleanArray(edgeList.size)
 
-    fun solveProblem(): Long {
+    init {
         universities.forEach { subCount[it] = 1 }
         universities.forEach { isUniversity[it] = true }
+    }
+
+    fun solveProblem(): Long {
 
         calculateSubtreeParams(0, -1)
         val v = findBestAnswer(0, -1)
