@@ -2,29 +2,30 @@ package ru.hse.spb
 
 import kotlin.math.max
 
-fun readEdgeList(vertexNumber: Int, edgeNumber: Int): Array<MutableList<Int>> {
-    val edgeList = Array(vertexNumber) { MutableList(0) { 0 } }
+fun readEdgeList(vertexNumber: Int, edgeNumber: Int): Array<List<Int>> {
+    val mutableEdgeList = Array(vertexNumber) { MutableList(0) { 0 } }
     for (i in 0 until edgeNumber) {
         val (vertex1, vertex2) = readLine()!!.split(' ').map { it.toInt() - 1 }
-        edgeList[vertex1].add(vertex2)
-        edgeList[vertex2].add(vertex1)
+        mutableEdgeList[vertex1].add(vertex2)
+        mutableEdgeList[vertex2].add(vertex1)
     }
-    return edgeList
+    return Array(vertexNumber) { mutableEdgeList[it] }
 }
 
-fun maximalRoadsLength(edgeList: Array<out List<Int>>, universities: List<Int>): Long {
+fun maximalRoadsLength(edgeList: Array<List<Int>>, universities: List<Int>): Long {
     val solver = MaximalRoadsLengthFinder(edgeList, universities)
     return solver.solveProblem()
 }
 
-class MaximalRoadsLengthFinder private constructor(private val edgeList: Array<out List<Int>>, private val universities: List<Int>, private val subCount: IntArray, private val isUniversity: BooleanArray) {
+class MaximalRoadsLengthFinder(private val edgeList: Array<List<Int>>, private val universities: List<Int>) {
 
-    constructor(edgeList: Array<out List<Int>>, universities: List<Int>): this(edgeList, universities, IntArray(edgeList.size), BooleanArray(edgeList.size)) {
-        universities.forEach { subCount[it] = 1 }
-        universities.forEach { isUniversity[it] = true }
-    }
+    private val subCount = IntArray(edgeList.size)
+    private val isUniversity = BooleanArray(edgeList.size)
 
     fun solveProblem(): Long {
+        universities.forEach { subCount[it] = 1 }
+        universities.forEach { isUniversity[it] = true }
+
         calculateSubtreeParams(0, -1)
         val v = findBestAnswer(0, -1)
         return sumDistances(v, -1, 0)
