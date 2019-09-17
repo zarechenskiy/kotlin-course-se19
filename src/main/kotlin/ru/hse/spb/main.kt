@@ -14,7 +14,7 @@ fun getGreeting(): String {
     return words.joinToString(separator = " ")
 }
 
-fun main(args: Array<String>) {
+fun main() {
     val expLexer = ExpLexer(CharStreams.fromString("(1 + 2)"))
     println(ExpParser(BufferedTokenStream(expLexer)).eval().value)
 }
