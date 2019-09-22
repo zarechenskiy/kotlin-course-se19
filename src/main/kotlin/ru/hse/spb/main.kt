@@ -2,18 +2,18 @@ package ru.hse.spb
 
 import java.util.*
 
-const val CHAR_DIGIT_ONE = '1'
+private const val CHAR_DIGIT_ONE = '1'
 
 enum class FieldStatus {
     EMPTY, BLOCKED, CASTLE
 }
 
-val dx = intArrayOf(1, 0, 0, -1)
-val dy = intArrayOf(0, 1, -1, 0)
+private val dx = intArrayOf(1, 0, 0, -1)
+private val dy = intArrayOf(0, 1, -1, 0)
 
 data class Field(
-        var x: Int,
-        var y: Int
+        val x: Int,
+        val y: Int
 ) {
     var status: FieldStatus? = null
     var distance: Int = 0
@@ -36,7 +36,7 @@ data class Player(
         val id: Int,
         val maxDistance: Int
 ) {
-    var castles: Queue<Field> = LinkedList()
+    var castles: Queue<Field> = ArrayDeque()
     var score: Int = 0
 
     fun addCastle(field: Field, distance: Int = 0) {
@@ -48,10 +48,10 @@ data class Player(
 }
 
 data class Board(
-        var rows: Int,
-        var cols: Int
+        val rows: Int,
+        val cols: Int
 ) {
-    private val board: Array<Array<Field>> = Array(rows) { row -> Array(cols) { col -> Field(row, col) } }
+    private val board = Array(rows) { row -> Array(cols) { col -> Field(row, col) } }
 
     fun containsField(i: Int, j: Int): Boolean {
         return i in 0 until rows && j in 0 until cols
@@ -71,13 +71,13 @@ fun playGame(board: Board, players: Array<Player>): List<Int> {
             }
 
             val newCastles = LinkedList<Field>()
-            while (!player.castles.isEmpty()) {
+            while (player.castles.isNotEmpty()) {
                 val castle = player.castles.poll()
                 if (castle.distance == player.maxDistance) {
                     newCastles.add(castle)
                     continue
                 }
-                for (j in 0..3) {
+                for (j in dx.indices) {
                     val x = castle.x + dx[j]
                     val y = castle.y + dy[j]
                     if (board.containsField(x, y) && board.getField(x, y).isFree) {
