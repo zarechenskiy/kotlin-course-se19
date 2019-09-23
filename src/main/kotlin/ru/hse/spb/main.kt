@@ -3,11 +3,11 @@ package ru.hse.spb
 import java.util.Scanner
 
 private enum class Gender {
-    M, F, ERROR
+    M, F
 }
 
 private enum class Token {
-    ADJECTIVE, NOUN, VERB, END, ERROR
+    ADJECTIVE, NOUN, VERB, END
 }
 
 private enum class State {
@@ -40,29 +40,25 @@ private val states = mapOf(
         )
 )
 
-private fun getGender(word: String): Gender {
-    if (word.endsWith("lios")
-            || word.endsWith("etr")
-            || word.endsWith("initis"))
-        return Gender.M;
-    if (word.endsWith("liala")
-            || word.endsWith("etra")
-            || word.endsWith("inites"))
-        return Gender.F
-    return Gender.ERROR
+fun String.endsWithAnyOf(vararg strs: String): Boolean {
+    return strs.firstOrNull { s -> endsWith(s) } != null
 }
 
-private fun getToken(word: String): Token {
-    if (word.endsWith("lios") || word.endsWith("liala")) {
-        return Token.ADJECTIVE
+private fun getGender(word: String): Gender? {
+    return when {
+        word.endsWithAnyOf("lios", "etr", "initis") -> Gender.M
+        word.endsWithAnyOf("liala", "etra", "inites") -> Gender.F
+        else -> null
     }
-    if (word.endsWith("etr") || word.endsWith("etra")) {
-        return Token.NOUN
+}
+
+private fun getToken(word: String): Token? {
+    return when {
+        word.endsWithAnyOf("lios", "liala") -> Token.ADJECTIVE
+        word.endsWithAnyOf("etr", "etra") -> Token.NOUN
+        word.endsWithAnyOf("initis", "inites") -> Token.VERB
+        else -> null
     }
-    if (word.endsWith("initis") || word.endsWith("inites")) {
-        return Token.VERB
-    }
-    return Token.ERROR;
 }
 
 fun main() {
@@ -75,20 +71,17 @@ fun belongsToLanguage(reader: Scanner): Boolean {
         return false
     }
     var word = reader.next()
-    val gender = getGender(word = word)
-    if (gender == Gender.ERROR) {
-        return false
-    }
+    val gender = getGender(word) ?: return false
     if (!reader.hasNext()) {
         return true
     }
     var curState = State.START
     while (true) {
         val token = getToken(word)
-        if (gender != getGender(word) || token == Token.ERROR) {
+        if (gender != getGender(word) || token == null) {
             return false
         }
-        curState = states.getOrDefault(curState, mapOf()).getOrDefault(getToken(word = word), State.NO)
+        curState = states[curState]?.get(getToken(word)) ?: State.NO
         if (curState == State.NO) {
             return false
         }
@@ -98,6 +91,6 @@ fun belongsToLanguage(reader: Scanner): Boolean {
         word = reader.next()
     }
 
-    curState = states.getOrDefault(curState, mapOf()).getOrDefault(Token.END, State.NO)
+    curState = states[curState]?.get(Token.END) ?: State.NO
     return curState == State.YES
 }
