@@ -15,16 +15,9 @@ fun main(args: Array<String>) {
     val code = removeComments(File(args[0]).readLines()).joinToString(separator = System.lineSeparator())
     val expLexer = LangLexer(CharStreams.fromString(code))
     val expParser = LangParser(CommonTokenStream(expLexer))
-//    println(lines)
-//    println(expParser)
-//    while (true) {
-//        val token = expLexer.nextToken()
-//        if (token.text != "<EOF>") {
-//            println(expParser.tokenNames[token.type])
-//        } else {
-//            break
-//        }
+//    expParser.file().accept(CustomVisitor<Void>())
+    println(expParser.file().accept(BinaryExpressionVisitor()))
+//    for (i in 0 until 13) {
+//        println(LangParser.VOCABULARY.getSymbolicName(expLexer.nextToken().type))
 //    }
-    expParser.file().accept(CustomVisitor<Void>())
-//    println(code)
 }

@@ -51,7 +51,7 @@ statement                     : function
                              | if_expr
                              | return_expr ;
 
-block                        : (statement WS+)* ;
+block                        : (statement (WS+ statement)*)? ;
 
 block_with_braces            : WS* LBRACE WS* block WS* RBRACE ;
 
@@ -80,7 +80,8 @@ function_call                : WS* IDENTIFIER WS* LPAREN WS* arguments WS* RPARE
 arguments                    : WS* (expression (WS* SEPARATOR WS* expression)*) ;
 
 binary_expression            : WS* LITERAL
-                             | WS* IDENTIFIER WS
+                             | WS* IDENTIFIER
+                             | WS* LPAREN WS* middle=binary_expression WS* RPAREN
                              | left=binary_expression WS* operator=(ASTERISK | DIVISION | REMINDER) WS* right=binary_expression
                              | left=binary_expression WS* operator=(MINUS | PLUS) WS* right=binary_expression
                              | left=binary_expression WS* operator=(LT | GT | LE | GE) WS* right=binary_expression
