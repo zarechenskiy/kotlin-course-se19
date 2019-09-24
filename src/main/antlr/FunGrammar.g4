@@ -43,7 +43,7 @@ l_if
     ;
 
 assignment
-    : variable '=' expression
+    : identifier '=' expression
     ;
 
 l_return
@@ -78,24 +78,24 @@ and
     ;
 
 equality
-    : add_substract
-    equality EQ_OPERATOR add_substract
+    : add_subtract
+    | equality EQ_OPERATOR add_subtract
     ;
 
-add_substract
+add_subtract
     : mult_divide
-    | add_substract ('+' | '-') mult_divide
+    | add_subtract ADD_OPERATOR mult_divide
     ;
 
 mult_divide
     : singular_expression
-    | mult_divide ('*' | '/' | '%') singular_expression
+    | mult_divide MULT_OPERATOR singular_expression
     ;
 
 singular_expression
     : function_call
     | identifier
-    | LITERAL
+    | literal
     | '(' expression ')'
     ;
 
@@ -103,15 +103,19 @@ identifier
     : IDENTIFIER
     ;
 
+literal
+    : LITERAL
+    ;
+
 IDENTIFIER
-    : [a-zA-Z][a-zA-Z0-9]+
+    : [a-zA-Z][a-zA-Z0-9]*
     ;
 
 LITERAL
     :   ('0' | ('1'..'9') ('0'..'9')*)
     ;
 
-WS : ('\t' | ' ' | '\r' | '\n') -> skip;
+WS : ('\t' | ' ' | '\r') -> skip;
 
 NEWLINE : '\n';
 

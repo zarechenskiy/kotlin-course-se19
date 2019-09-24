@@ -2,52 +2,34 @@ package ru.hse.spb
 
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
-import org.antlr.v4.runtime.tree.ParseTree
-import ru.hse.spb.parser.FunGrammarBaseVisitor
+import org.antlr.v4.runtime.misc.ParseCancellationException
+import ru.hse.spb.funterpreter.EvaluationVisitor
+import ru.hse.spb.funterpreter.runProgram
 import ru.hse.spb.parser.FunGrammarLexer
 import ru.hse.spb.parser.FunGrammarParser
-import java.util.*
 
 private val testProgram = """
-    2 + 3 * 4
+    var x = 0 
+    fun f(xx) {
+        println(x)
+        x = 2
+        return x + 1
+    }
+    println(f(x))
+    return x
 """.trimIndent()
 
+// TODO line comments, tests, main, docs
+
 fun main(args: Array<String>) {
-    val lexer = FunGrammarLexer(CharStreams.fromString(testProgram))
-    val parser = FunGrammarParser(CommonTokenStream(lexer))
-
-    parser.file().accept(EvaluationVisitor())
-
-}
-
-
-class EvaluationVisitor : FunGrammarBaseVisitor<Unit>() {
-    val scope = Scope<ParseTree>()
-
-    private inline fun withNewScopeDo(f : () -> Unit) {
-        scope.enterScope()
-        f()
-        scope.exitScope()
-    }
-
-    override fun visitFile(ctx: FunGrammarParser.FileContext) {
-        ctx.block().accept(this)
-    }
-
-    override fun visitBlock_with_braces(ctx: FunGrammarParser.Block_with_bracesContext) {
-        ctx.block().accept(this)
-    }
-
-    override fun visitBlock(ctx: FunGrammarParser.BlockContext) {
-        withNewScopeDo { ctx.statement().forEach { it.accept(this) } }
-    }
-
-    override fun visitStatement(ctx: FunGrammarParser.StatementContext) {
-        ctx.getChild(0).accept(this)  // statement has only one child
-    }
-
-    override fun visitFunction(ctx: FunGrammarParser.FunctionContext) {
-        val functionName = ctx.identifier().IDENTIFIER().symbol.text
-        
+    try {
+        val result = runProgram(testProgram)
+        println("Returned: ${result.returned}")
+        println("Value: ${result.value}")
+        println("Exception: ${result.exception}")
+    } catch (e: ParseCancellationException) {
+        println(e.message)
+        println("Execution finished due to parse error")
+        return
     }
 }
