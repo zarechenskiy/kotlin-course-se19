@@ -51,7 +51,7 @@ statement                     : function
                              | if_expr
                              | return_expr ;
 
-block                        : (statement)* ;
+block                        : (statement WS+)* ;
 
 block_with_braces            : WS* LBRACE WS* block WS* RBRACE ;
 

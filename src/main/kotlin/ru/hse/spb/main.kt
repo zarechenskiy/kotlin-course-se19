@@ -25,6 +25,6 @@ fun main(args: Array<String>) {
 //            break
 //        }
 //    }
-//    expParser.file().accept(CustomVisitor<Void>())
-    println(code)
+    expParser.file().accept(CustomVisitor<Void>())
+//    println(code)
 }
