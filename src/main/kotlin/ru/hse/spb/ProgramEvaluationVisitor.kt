@@ -69,7 +69,7 @@ class ProgramEvaluationVisitor(private var scope: Scope) : FunBaseVisitor<Int?>(
             val oldScope = scope
             scope = Scope(scope)
 
-            for (i in 0..argumentNames.size - 1) {
+            for (i in 0..argumentNames.lastIndex) {
                 scope.addVariable(argumentNames[i], args[i], ctx)
             }
             visit(ctx.blockWithBraces())
