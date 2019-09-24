@@ -16,7 +16,7 @@ fun main(args: Array<String>) {
     val expLexer = LangLexer(CharStreams.fromString(code))
     val expParser = LangParser(CommonTokenStream(expLexer))
 //    expParser.file().accept(CustomVisitor<Void>())
-    println(expParser.file().accept(BinaryExpressionVisitor()))
+    println(expParser.file().accept(ExpressionVisitor()))
 //    for (i in 0 until 13) {
 //        println(LangParser.VOCABULARY.getSymbolicName(expLexer.nextToken().type))
 //    }

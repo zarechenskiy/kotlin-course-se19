@@ -94,10 +94,4 @@ public interface LangVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitArguments(LangParser.ArgumentsContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link LangParser#binary_expression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitBinary_expression(LangParser.Binary_expressionContext ctx);
 }

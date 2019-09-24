@@ -12,7 +12,7 @@ class CustomVisitor<T>() : LangBaseVisitor<T>() {
     }
 
     override fun visitBlock_with_braces(ctx: LangParser.Block_with_bracesContext?): T {
-        return CustomVisitor<T>(context.copy()).visitBlock(ctx?.block())
+        return BlockVisitor<T>(context.copy()).visitBlock(ctx?.block())
     }
 
     override fun visitFunction(ctx: LangParser.FunctionContext?): T {
@@ -53,9 +53,5 @@ class CustomVisitor<T>() : LangBaseVisitor<T>() {
 
     override fun visitArguments(ctx: LangParser.ArgumentsContext?): T {
         return super.visitArguments(ctx)
-    }
-
-    override fun visitBinary_expression(ctx: LangParser.Binary_expressionContext?): T {
-        return super.visitBinary_expression(ctx)
     }
 }

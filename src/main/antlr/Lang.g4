@@ -70,21 +70,21 @@ assignment                   : WS* IDENTIFIER WS* ASSIGNMENT WS* expression ;
 return_expr                  : WS* RET WS+ expression ;
 
 expression                   : WS* function_call
+
                              | WS* IDENTIFIER
                              | WS* LITERAL
-                             | WS* LPAREN WS* expression WS* RPAREN
-                             | WS* binary_expression ;
+
+                             | WS* LPAREN WS* middle=expression WS* RPAREN
+
+                             | left=expression WS* operator=(ASTERISK | DIVISION | REMINDER) WS* right=expression
+                             | left=expression WS* operator=(MINUS | PLUS) WS* right=expression
+                             | left=expression WS* operator=(LT | GT | LE | GE) WS* right=expression
+                             | left=expression WS* operator=(EQ | NEQ) WS* right=expression
+                             | left=expression WS* operator=AND WS* right=expression
+                             | left=expression WS* operator=OR WS* right=expression ;
 
 function_call                : WS* IDENTIFIER WS* LPAREN WS* arguments WS* RPAREN ;
 
 arguments                    : WS* (expression (WS* SEPARATOR WS* expression)*) ;
 
-binary_expression            : WS* LITERAL
-                             | WS* IDENTIFIER
-                             | WS* LPAREN WS* middle=binary_expression WS* RPAREN
-                             | left=binary_expression WS* operator=(ASTERISK | DIVISION | REMINDER) WS* right=binary_expression
-                             | left=binary_expression WS* operator=(MINUS | PLUS) WS* right=binary_expression
-                             | left=binary_expression WS* operator=(LT | GT | LE | GE) WS* right=binary_expression
-                             | left=binary_expression WS* operator=(EQ | NEQ) WS* right=binary_expression
-                             | left=binary_expression WS* operator=AND WS* right=binary_expression
-                             | left=binary_expression WS* operator=OR WS* right=binary_expression ;
+

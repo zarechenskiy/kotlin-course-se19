@@ -147,14 +147,4 @@ public interface LangListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitArguments(LangParser.ArgumentsContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link LangParser#binary_expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterBinary_expression(LangParser.Binary_expressionContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link LangParser#binary_expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitBinary_expression(LangParser.Binary_expressionContext ctx);
 }
