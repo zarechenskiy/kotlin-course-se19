@@ -34,6 +34,9 @@ internal class EvaluationVisitor : FunGrammarBaseVisitor<Unit> {
     var value : Value = IntValue()
         private set
 
+    private val shouldStop
+        get() = exception != null || returned != null
+
     constructor(parent : EvaluationVisitor) : this(parent.scope)
 
     constructor(parentScope : ValueScope) : super() {
@@ -59,8 +62,7 @@ internal class EvaluationVisitor : FunGrammarBaseVisitor<Unit> {
     override fun visitBlock(ctx: FunGrammarParser.BlockContext) {
         for (statement in ctx.statement()) {
             statement.accept(this)
-            var shouldStop = returned != null
-            exception?.backtrace?.push("\tat line ${statement.getStart().line}: ${statement.text}")?.let { shouldStop = true }
+            exception?.backtrace?.push("\tat line ${statement.getStart().line}: ${statement.text}")
             if (shouldStop) {
                 break
             }
@@ -87,10 +89,11 @@ internal class EvaluationVisitor : FunGrammarBaseVisitor<Unit> {
     override fun visitL_while(ctx: FunGrammarParser.L_whileContext) {
         val condition = ctx.expression()
         val blockVisitor = childVisitor()
-        while (checkCondition(condition) && blockVisitor.exception == null) {
+        while (!blockVisitor.shouldStop && checkCondition(condition) && !shouldStop) { // checking shouldStop after evaluating condition is important
             ctx.block_with_braces().accept(blockVisitor)
         }
         exception = exception ?: blockVisitor.exception
+        returned = returned ?: blockVisitor.returned
     }
 
     override fun visitL_if(ctx: FunGrammarParser.L_ifContext) {
@@ -104,7 +107,8 @@ internal class EvaluationVisitor : FunGrammarBaseVisitor<Unit> {
             }
             ctx.block_with_braces(1).accept(blockVisitor)
         }
-        exception = exception ?: blockVisitor.exception // actually exception cant be not null here
+        exception = exception ?: blockVisitor.exception
+        returned = returned ?: blockVisitor.returned
     }
 
     override fun visitAssignment(ctx: FunGrammarParser.AssignmentContext) {
@@ -218,7 +222,12 @@ internal class EvaluationVisitor : FunGrammarBaseVisitor<Unit> {
         if (exception != null) {
             return
         }
-        println(argumentValues.toString()) // TODO print with style
+        println(argumentValues.joinToString {
+            when (it) {
+                is IntValue -> it.value.toString()
+                is Function -> it.toString()
+            }}
+        )
     }
 
     override fun visitBinary_expression(ctx: FunGrammarParser.Binary_expressionContext) {

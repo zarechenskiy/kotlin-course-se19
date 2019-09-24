@@ -8,4 +8,17 @@ class FunException(val description : String, val backtrace : Stack<String> = Sta
             builder.append('\n').append(str)
         }.toString()
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is FunException) {
+            return false
+        }
+        return description == other.description && backtrace == other.backtrace
+    }
+
+    override fun hashCode(): Int {
+        var result = description.hashCode()
+        result = 31 * result + backtrace.hashCode()
+        return result
+    }
 }

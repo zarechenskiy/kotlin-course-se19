@@ -3,7 +3,7 @@ grammar FunGrammar;
 file : block;
 
 block
-    : (NEWLINE* statement+ NEWLINE*)*
+    : (NEWLINE* statement+ COMMENT? NEWLINE*)*
     ;
 
 block_with_braces
@@ -31,6 +31,7 @@ variable
 parameter_names
     : identifier
       (',' identifier)*
+    |
     ;
 
 l_while
@@ -61,6 +62,7 @@ function_call
 arguments
     : expression
       (',' expression)*
+    |
     ;
 
 binary_expression
@@ -108,11 +110,11 @@ literal
     ;
 
 IDENTIFIER
-    : [a-zA-Z][a-zA-Z0-9]*
+    : [a-zA-Z_][a-zA-Z0-9_]*
     ;
 
 LITERAL
-    :   ('0' | ('1'..'9') ('0'..'9')*)
+    :   '-'? ('0' | ('1'..'9') ('0'..'9')*)
     ;
 
 WS : ('\t' | ' ' | '\r') -> skip;
@@ -124,3 +126,5 @@ AND_OPERATOR : '&&';
 EQ_OPERATOR : [><] | '>=' | '<=' | '==' | '!=';
 ADD_OPERATOR : [+-];
 MULT_OPERATOR : [*/%];
+
+COMMENT : '//' (~[\n])*;
