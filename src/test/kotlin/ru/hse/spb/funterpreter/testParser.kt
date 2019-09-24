@@ -1,22 +1,31 @@
 package ru.hse.spb.funterpreter
 
-import org.antlr.v4.runtime.*
+import org.antlr.v4.runtime.CharStreams
+import org.antlr.v4.runtime.CommonTokenStream
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 import ru.hse.spb.parser.FunGrammarLexer
 import ru.hse.spb.parser.FunGrammarParser
-
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.*
 
 class TestParser {
 
     @Test
-    fun parseIdentifier() {
+    fun parseLiteral() {
         val parser = parse(" \t 1234 \t \t\n")
 
         // NPE if something's wrong
         val statements = parser.file().block().statement()
         assertEquals(1, statements.size)
         assertEquals("1234", statements[0].expression().getToPoint().mult_divide().getLiteralText())
+    }
+
+    @Test
+    fun parseNegativeLiteral() {
+        val parser = parse(" \t -1234 \t \t\n")
+
+        val statements = parser.file().block().statement()
+        assertEquals(1, statements.size)
+        assertEquals("-1234", statements[0].expression().getToPoint().mult_divide().getLiteralText())
     }
 
     @Test

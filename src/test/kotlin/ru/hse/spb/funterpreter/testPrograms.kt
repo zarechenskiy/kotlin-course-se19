@@ -1,8 +1,8 @@
 package ru.hse.spb.funterpreter
 
 import org.antlr.v4.runtime.misc.ParseCancellationException
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 
 
 class TestPrograms {
@@ -52,6 +52,20 @@ class TestPrograms {
         )
         testProgramResult("0 || 1",
                 testValue = true, value = IntValue(1)
+        )
+    }
+
+    @Test
+    fun `negative literal`() {
+        testProgramResult("2 + -4",
+                testValue = true, value = IntValue(-2)
+        )
+    }
+
+    @Test
+    fun `complex operation`() {
+        testProgramResult("1000 * (0 || 123 == 1) + (1 < 4 > 0) * 100 - 1 - 1",
+                testValue = true, value = IntValue(98)
         )
     }
 
