@@ -1,6 +1,6 @@
 grammar Lang;
 
-WS : ('\r\n' | '\r' | '\n') -> skip ;
+WS : ('\r\n' | '\r' | '\n' | ' ' | '\t') -> skip ;
 
 VARIABLE           : 'var' ;
 FUNCTION           : 'fun' ;
@@ -55,37 +55,37 @@ statement                     : function
 
 block                        : (statement)* ;
 
-block_with_braces            : LBRACE block RBRACE ;
+block_with_braces            : WS LBRACE WS block WS RBRACE WS ;
 
-function                     : FUNCTION IDENTIFIER LPAREN parameter_names RPAREN block_with_braces ;
+function                     : WS FUNCTION WS IDENTIFIER WS LPAREN WS parameter_names WS RPAREN WS block_with_braces WS ;
 
-variable                     : VARIABLE IDENTIFIER (ASSIGNMENT expression)? ;
+variable                     : WS VARIABLE WS IDENTIFIER WS (WS ASSIGNMENT WS expression)? WS ;
 
-parameter_names              : (IDENTIFIER (SEPARATOR IDENTIFIER)*)? ;
+parameter_names              : WS (IDENTIFIER WS (WS SEPARATOR WS IDENTIFIER)*)? WS ;
 
-while_expr                   : WHILE LPAREN expression RPAREN block_with_braces ;
+while_expr                   : WS WHILE WS LPAREN WS expression WS RPAREN WS block_with_braces WS ;
 
-if_expr                      : IF LPAREN expression RPAREN block_with_braces (ELSE block_with_braces)? ;
+if_expr                      : WS IF WS LPAREN WS expression WS RPAREN WS block_with_braces WS (WS ELSE WS block_with_braces)? WS ;
 
-assignment                   : IDENTIFIER ASSIGNMENT expression ;
+assignment                   : WS IDENTIFIER WS ASSIGNMENT WS expression WS ;
 
-return_expr                  : RET expression ;
+return_expr                  : WS RET WS expression WS ;
 
-expression                   : function_call
-                             | IDENTIFIER
-                             | LITERAL
-                             | LPAREN expression RPAREN
-                             | binary_expression ;
+expression                   : WS function_call WS
+                             | WS IDENTIFIER WS
+                             | WS LITERAL WS
+                             | WS LPAREN WS expression WS RPAREN WS
+                             | WS binary_expression WS ;
 
-function_call                : IDENTIFIER LPAREN arguments RPAREN ;
+function_call                : WS IDENTIFIER WS LPAREN WS arguments WS RPAREN WS ;
 
-arguments                    : (expression | expression (SEPARATOR expression))? ;
+arguments                    : WS (expression | expression WS (SEPARATOR expression))? WS ;
 
-binary_expression            : LITERAL
-                             | IDENTIFIER
-                             | left=binary_expression operator=(ASTERISK | DIVISION | REMINDER) right=binary_expression
-                             | left=binary_expression operator=(MINUS | PLUS) right=binary_expression
-                             | left=binary_expression operator=(LT | GT | LE | GE) right=binary_expression
-                             | left=binary_expression operator=(EQ | NEQ) right=binary_expression
-                             | left=binary_expression operator=AND right=binary_expression
-                             | left=binary_expression operator=OR right=binary_expression ;
+binary_expression            : WS LITERAL WS
+                             | WS IDENTIFIER WS
+                             | WS left=binary_expression WS operator=(ASTERISK | DIVISION | REMINDER) WS right=binary_expression WS
+                             | WS left=binary_expression WS operator=(MINUS | PLUS) WS right=binary_expression WS
+                             | WS left=binary_expression WS operator=(LT | GT | LE | GE) WS right=binary_expression WS
+                             | WS left=binary_expression WS operator=(EQ | NEQ) WS right=binary_expression WS
+                             | WS left=binary_expression WS operator=AND WS right=binary_expression WS
+                             | WS left=binary_expression WS operator=OR WS right=binary_expression WS ;
