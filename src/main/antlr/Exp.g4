@@ -1,32 +1,49 @@
 grammar Exp;
 
+my_file: my_block;
 
-eval returns [double value]
-    :    exp=additionExp {$value = $exp.value;}
-    ;
+my_block: my_statement*;
 
-additionExp returns [double value]
-    :    m1=multiplyExp       {$value =  $m1.value;}
-         ( '+' m2=multiplyExp {$value += $m2.value;}
-         | '-' m2=multiplyExp {$value -= $m2.value;}
-         )*
-    ;
+my_block_with_braces: '{' my_block '}';
 
-multiplyExp returns [double value]
-    :    a1=atomExp       {$value =  $a1.value;}
-         ( '*' a2=atomExp {$value *= $a2.value;}
-         | '/' a2=atomExp {$value /= $a2.value;}
-         )*
-    ;
+my_statement: my_fun | my_var | my_expr | my_while | my_if | my_assignment | my_return;
 
-atomExp returns [double value]
-    :    n=Number                {$value = Double.parseDouble($n.text);}
-    |    '(' exp=additionExp ')' {$value = $exp.value;}
-    ;
+my_fun: 'fun' IDENTIFIER '(' my_params ')' my_block_with_braces;
 
+my_params: IDENTIFIER (',' IDENTIFIER)* | ;
 
-Number
-    :    ('0'..'9')+ ('.' ('0'..'9')+)?
-    ;
+my_var: 'var' (IDENTIFIER | my_assignment);
+
+my_while: 'while' '(' my_expr ')' my_block_with_braces;
+
+my_if: 'if' '(' my_expr ')' my_block_with_braces ('else' my_block_with_braces)?;
+
+my_assignment: IDENTIFIER '=' my_expr;
+
+my_return: 'return' my_expr;
+
+my_expr: my_func_call | IDENTIFIER | ALL_UNAR_OP my_expr |  ALL_CONST | LITERAL
+                      | '(' my_expr ')' | my_expr ALL_BIN_OP my_expr;
+
+my_func_call: IDENTIFIER '(' my_args ')';
+
+my_args: my_expr (',' my_expr)* | ;
+
+ALL_UNAR_OP: '-' | '+';
+
+ALL_BIN_OP: MULT_OP | ADD_OP | COMP_OP | LOG_OP;
+
+ALL_CONST: LOG_CONST;
+
+MULT_OP: '*' | '/' | '%';
+ADD_OP: '+' | '-';
+COMP_OP: '<' | '>' | '<=' | '>=' | '==' | '!=';
+LOG_OP: '&&' | '||';
+LOG_CONST: 'TRUE' | 'FALSE';
 
 WS : (' ' | '\t' | '\r'| '\n') -> skip;
+
+IDENTIFIER: [a-zA-Z][a-zA-Z0-9]*;
+
+LITERAL: [1-9][0-9]+ | [0-9];
+
