@@ -52,8 +52,8 @@ class ExpressionVisitor(): LangBaseVisitor<Int>() {
                 LangParser.AND      -> (leftValue != 0 && rightValue != 0).toInt()
                 LangParser.OR       -> (leftValue != 0 || rightValue != 0).toInt()
                 else -> {
-                    throw IllegalArgumentException("Illegal operator was found: " +
-                            LangParser.VOCABULARY.getSymbolicName(ctx.operator.type)
+                    throw IllegalArgumentException(
+                        "Illegal operator was found: " + LangParser.VOCABULARY.getSymbolicName(ctx.operator.type)
                     )
                 }
             }

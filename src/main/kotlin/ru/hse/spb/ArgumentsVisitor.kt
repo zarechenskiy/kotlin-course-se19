@@ -12,6 +12,6 @@ class ArgumentsVisitor(): LangBaseVisitor<List<Int>>() {
     }
 
     override fun visitArguments(ctx: LangParser.ArgumentsContext?): List<Int> {
-        return ctx?.expression()!!.map { arg -> arg.accept(ExpressionVisitor(context)) }
+        return ctx?.expression()!!.map { arg -> arg.accept(ExpressionVisitor(context.copy())) }
     }
 }

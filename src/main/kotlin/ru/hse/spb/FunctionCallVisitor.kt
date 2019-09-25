@@ -12,7 +12,7 @@ class FunctionCallVisitor(): LangBaseVisitor<Int>() {
         this.context = context
     }
 
-    override fun visitFunction_call(ctx: LangParser.Function_callContext?): Int? {
+    override fun visitFunction_call(ctx: LangParser.Function_callContext?): Int {
         if (!context.definedFunctions.containsKey(ctx?.IDENTIFIER()!!.text)) {
             throw IllegalStateException("Can not recognize undefined function: ${ctx.IDENTIFIER().text}")
         }
@@ -30,7 +30,20 @@ class FunctionCallVisitor(): LangBaseVisitor<Int>() {
                     "${ctx.arguments().expression().size}")
         }
 
+        if (functionCtx.block_with_braces()?.block() == null) {
+            return 0
+        }
+
         val args = ctx.arguments().accept(ArgumentsVisitor(context.copy()))
-        return functionCtx.block_with_braces()?.block()?.accept(BlockVisitor(context.copy()))
+        val nextContext = context.copy()
+
+        if (args != null && args.size > 0) {
+            val names = functionCtx.parameter_names().IDENTIFIER().map { it.text }
+            for (i in args.indices) {
+                nextContext.varValues[names[i]] = args[i]
+            }
+        }
+
+        return functionCtx.block_with_braces().block().accept(BlockVisitor(nextContext))
     }
 }

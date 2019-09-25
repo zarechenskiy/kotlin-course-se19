@@ -43,7 +43,7 @@ AND                : '&&' ;
 
 file                         : block ;
 
-statement                     : function
+statement                    : function
                              | assignment
                              | expression
                              | variable
