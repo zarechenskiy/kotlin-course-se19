@@ -1,44 +1,111 @@
 grammar FunCall;
 
-// foo(PI)
-// foo(1, 2, PI)
-
 file
     : block
     ;
 
 block
-    : (NEWLINE* statements+=statement NEWLINE*)*
+    : (statement)*
+    ;
+
+blockWithBraces
+    : '{' block '}'
+    ;
+
+variable
+    : 'var' IDENTIFIER ('=' expression)?
+    ;
+
+expression
+    : functionCall
+    | binaryExperession
+    | innerExpression
+    ;
+
+binaryExperession : left=innerExpression binaryOperator right=innerExpression;
+
+value
+    : IDENTIFIER
+    | LITERAL;
+
+
+innerExpression
+    : '(' expression ')'
+    | value;
+
+poka
+    : 'while' '(' expression ')' blockWithBraces;
+
+esli
+    : 'if' '(' expression ')' blockWithBraces ('else' blockWithBraces)?;
+
+derji : 'return' expression;
+
+assigment : IDENTIFIER '=' expression;
+
+function : 'fun' IDENTIFIER '(' argumentList ')' blockWithBraces;
+
+parameterList
+    : (expression)?
+    | expression ',' parameterList
+    ;
+
+functionCall : IDENTIFIER '(' parameterList ')';
+
+argumentList
+    : (IDENTIFIER)?
+    | IDENTIFIER ',' argumentList
     ;
 
 statement
     : functionCall
+    | variable
+    | function
+    | expression
+    | poka
+    | esli
+    | assigment
+    | derji
     ;
 
-functionCall
-    : IDENTIFIER '(' (arguments+=argument ',' SPACES*)* ')'
-    ;
-
-argument
-    : NUMBER_LITERAL
-    | IDENTIFIER
+binaryOperator
+    : '+'
+    | '-'
+    | '/'
+    | '%'
+    | '*'
+    | '&&'
+    | '||'
+    | '>'
+    | '<'
+    | '=='
+    | '!='
+    | '>='
+    | '<='
     ;
 
 // ------------- RULES FOR LEXER -------------
 
-IDENTIFIER
-    : ([a-zA-Z])+
+
+LITERAL
+    : '0'
+    | '-'? [1-9]([0-9])*
     ;
 
-NUMBER_LITERAL
-    : '-'? '0'
-    | '-'? ([1-9])([0-9])*
+IDENTIFIER
+    : ([_a-zA-Z])+([_0-9a-zA-Z])*
     ;
+
+WS
+    : (NEWLINE
+    | SPACES) -> skip;
 
 NEWLINE
-    : [\r\n]+
+    : ([\r\n])
     ;
 
 SPACES
-    : ' '+
-    ;
+    : [ \t] -> skip ;
+
+COMMENT:
+    '//' [^\r\n]* -> skip;

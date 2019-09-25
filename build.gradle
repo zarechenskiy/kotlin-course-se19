@@ -13,6 +13,10 @@ repositories {
     mavenCentral()
 }
 
+test {
+    useJUnitPlatform()
+}
+
 generateGrammarSource {
     maxHeapSize = "64m"
     arguments += ['-package', 'ru.hse.spb.parser', '-visitor']
@@ -24,7 +28,8 @@ compileKotlin.dependsOn generateGrammarSource
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "org.jetbrains.kotlin:kotlin-reflect"
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
     compile "org.antlr:antlr4-runtime:4.7"
     antlr "org.antlr:antlr4:4.7"
 }
