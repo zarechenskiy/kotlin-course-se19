@@ -56,13 +56,6 @@ class TestPrograms {
     }
 
     @Test
-    fun `negative literal`() {
-        testProgramResult("2 + -4",
-                testValue = true, value = IntValue(-2)
-        )
-    }
-
-    @Test
     fun `complex operation`() {
         testProgramResult("1000 * (0 || 123 == 1) + (1 < 4 > 0) * 100 - 1 - 1",
                 testValue = true, value = IntValue(98)
@@ -236,6 +229,47 @@ class TestPrograms {
             return x
         """.trimIndent(),
                 testReturned = true, returned = IntValue(2)
+        )
+    }
+
+    @Test
+    fun `if without else test`() {
+        testProgramResult("""
+            var x
+            if (1) { x = x + 1 }
+            if (0) { x = x + 10 }
+            return x
+        """.trimIndent(),
+                testReturned = true, returned = IntValue(1)
+        )
+    }
+
+    @Test
+    fun simpleRecursionTest() {
+        testProgramResult("""
+            fun g(y) {
+                return 2            
+            }
+            fun f(x) {
+                if (x <= 1) { return 1 }
+                return f(x - 1)
+            }
+            return f(8)
+        """.trimIndent(),
+                testReturned = true, returned = IntValue(1)
+        )
+    }
+
+    @Test
+    fun recursionTest() {
+        testProgramResult("""
+            fun f(x) {
+                if (x <= 1) { return 1 }
+                return f(x-1) + f(x-2)
+            }
+            return f(8)
+        """.trimIndent(),
+                testReturned = true, returned = IntValue(34)
         )
     }
 }

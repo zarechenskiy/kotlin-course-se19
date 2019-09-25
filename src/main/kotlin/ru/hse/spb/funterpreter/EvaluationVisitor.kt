@@ -5,7 +5,6 @@ import org.antlr.v4.runtime.misc.ParseCancellationException
 import ru.hse.spb.parser.FunGrammarBaseVisitor
 import ru.hse.spb.parser.FunGrammarLexer
 import ru.hse.spb.parser.FunGrammarParser
-import java.lang.ArithmeticException
 
 fun runProgram(program: CharStream): ProgramResult {
     val lexer = FunGrammarLexer(program).apply {
@@ -102,10 +101,10 @@ internal class EvaluationVisitor : FunGrammarBaseVisitor<Unit> {
         if (checkCondition(condition)) {
             ctx.block_with_braces(0).accept(blockVisitor)
         } else {
-            if (exception != null) {
+            if (shouldStop) {
                 return
             }
-            ctx.block_with_braces(1).accept(blockVisitor)
+            ctx.block_with_braces(1)?.accept(blockVisitor)
         }
         exception = exception ?: blockVisitor.exception
         returned = returned ?: blockVisitor.returned

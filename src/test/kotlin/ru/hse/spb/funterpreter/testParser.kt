@@ -20,15 +20,6 @@ class TestParser {
     }
 
     @Test
-    fun parseNegativeLiteral() {
-        val parser = parse(" \t -1234 \t \t\n")
-
-        val statements = parser.file().block().statement()
-        assertEquals(1, statements.size)
-        assertEquals("-1234", statements[0].expression().getToPoint().mult_divide().getLiteralText())
-    }
-
-    @Test
     fun parsePlus() {
         val parser = parse("1 + 3 - 4")
 
