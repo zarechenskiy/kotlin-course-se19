@@ -248,4 +248,25 @@ class CombineTest {
         """.trimIndent()
         assertTrue(checkExceptionThrown(code2))
     }
+
+    @Test
+    fun multiplyFunDefError() {
+        val code = """
+            fun a() {
+            }
+            fun a(x, y) {
+            }
+        """.trimIndent()
+        assertTrue(checkExceptionThrown(code))
+    }
+
+    @Test
+    fun functionAndArgWithEqualNamesError() {
+        val code = """
+            fun a(a, y) {
+            }
+            println(a(1,2))
+        """.trimIndent()
+        assertTrue(checkExceptionThrown(code))
+    }
 }
