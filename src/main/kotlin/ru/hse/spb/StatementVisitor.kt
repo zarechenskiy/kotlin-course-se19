@@ -2,7 +2,6 @@ package ru.hse.spb
 
 import ru.hse.spb.parser.LangBaseVisitor
 import ru.hse.spb.parser.LangParser
-import java.lang.IllegalStateException
 
 class StatementVisitor() : LangBaseVisitor<Void?>() {
 
@@ -36,22 +35,20 @@ class StatementVisitor() : LangBaseVisitor<Void?>() {
 
     override fun visitFunction(ctx: LangParser.FunctionContext?): Void? {
         val functionName = ctx!!.IDENTIFIER()!!.text!!
-        if (context.definedFunctions.containsKey(functionName) || functionName == "println") {
-            throw IllegalStateException(
-                "Multiply definition of function ${functionName} " +
-                        "at line ${ctx.start.line}"
-            )
+        check(!(context.definedFunctions.containsKey(functionName) || functionName == "println")) {
+            "Multiply definition of function $functionName " +
+            "at line ${ctx.start.line}"
         }
         context.definedFunctions[functionName] = ctx
         return null
     }
 
     override fun visitAssignment(ctx: LangParser.AssignmentContext?): Void? {
-        if (ctx?.IDENTIFIER() == null || ctx.expression() == null) {
-            throw IllegalStateException("Parsing error at line: ${ctx?.start?.line}")
+        check(!(ctx?.IDENTIFIER() == null || ctx.expression() == null)) {
+            "Parsing error at line: ${ctx?.start?.line}"
         }
-        if (!context.varValues.containsKey(ctx.IDENTIFIER().text)) {
-            throw IllegalStateException("Can not set value to the undefined variable: ${ctx.IDENTIFIER().text}")
+        check(context.varValues.containsKey(ctx!!.IDENTIFIER().text)) {
+            "Can not set value to the undefined variable: ${ctx.IDENTIFIER().text}"
         }
         context.varValues[ctx.IDENTIFIER().text] = ctx.expression().accept(ExpressionVisitor(context))
         return null

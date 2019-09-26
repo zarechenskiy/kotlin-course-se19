@@ -12,7 +12,6 @@ class ExpressionVisitor(): LangBaseVisitor<Int>() {
     }
 
     override fun visitExpression(ctx: LangParser.ExpressionContext?): Int {
-
         if (ctx?.LPAREN() != null) {
             check(ctx.middle != null) { "Parsing error at line ${ctx.start.line}" }
             return ctx.middle.accept(this)

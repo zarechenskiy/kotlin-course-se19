@@ -1,9 +1,2 @@
-fun f(a, b) {
-    return a + b
-}
-
-fun g(a, b) {
-    return a - b
-}
-
-println(f(10, 5) * g(10, 5)) // 75
+var a = 10
+println((a + 1) / (a - 1)) * 101 % 3)
