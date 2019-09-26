@@ -1,13 +1,15 @@
 package ru.hse.spb
 
-fun getGreeting(): String {
-    val words = mutableListOf<String>()
-    words.add("Hello,")
-    words.add("world!")
+import org.antlr.v4.runtime.CharStreams
+import org.antlr.v4.runtime.CommonTokenStream
+import ru.hse.spb.parser.FunInterpreterLexer
+import ru.hse.spb.parser.FunInterpreterParser
 
-    return words.joinToString(separator = " ")
-}
+val program = """
+""".trimMargin()
 
-fun main(args: Array<String>) {
-    println(getGreeting())
+ fun main(args: Array<String>) {
+    val lexer = FunInterpreterLexer(CharStreams.fromString(program))
+    val parser = FunInterpreterParser(CommonTokenStream(lexer))
+    parser.file().accept(StatementsEvaluatorVisitor(mapOf()))
 }
