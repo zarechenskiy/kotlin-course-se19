@@ -2,8 +2,10 @@ package ru.hse.spb.anstkras
 
 import org.junit.Test
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.assertThrows
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
+import java.lang.IllegalStateException
 
 class IntegrationTest {
 
@@ -98,10 +100,35 @@ class IntegrationTest {
         checkOutput(program, "0\n")
     }
 
+    @Test
+    fun testTryOverload() {
+        val program = """
+            fun foo(a) {
+                return a
+            }
+            fun foo(a, b) {
+                return a + b
+            }
+        """.trimIndent()
+        checkThrows(program)
+    }
+
+    @Test
+    fun testTryUnDefinedVariable() {
+        val program = """
+            var a = b
+        """.trimIndent()
+        checkThrows(program)
+    }
+
     private fun checkOutput(program: String, expected: String) {
         val out = ByteArrayOutputStream()
         System.setOut(PrintStream(out))
         runProgram(program)
         assertEquals(expected, out.toString())
+    }
+
+    private fun checkThrows(program: String) {
+        assertThrows<IllegalStateException> { runProgram(program) }
     }
 }
