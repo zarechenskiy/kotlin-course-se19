@@ -88,3 +88,7 @@ LITERAL:
 WHITESPACE:
     [ \t\r\n]+ -> channel(HIDDEN)
 ;
+
+COMMENT:
+    '//'~[\n\r]* -> channel(HIDDEN)
+;

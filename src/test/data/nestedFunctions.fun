@@ -6,4 +6,4 @@ fun foo(n) {
     return bar(1)
 }
 
-println(foo(41))
+println(foo(41)) // prints 42
