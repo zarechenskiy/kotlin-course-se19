@@ -16,4 +16,7 @@ fun main(args: Array<String>) {
     val lexer = LangLexer(CharStreams.fromString(code))
     val parser = LangParser(CommonTokenStream(lexer))
     parser.file().block().accept(BlockVisitor())
+    for (line in ExecutionContext.stdOut) {
+        println(line)
+    }
 }

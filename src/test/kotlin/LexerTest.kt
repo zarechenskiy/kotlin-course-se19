@@ -26,14 +26,15 @@ class LexerTest {
 
     @Test
     fun ifScenario() {
-        val code =
-            "var a = 10" +
-            "var b = 20" +
-            "if (a > b) {" +
-                "println(1)" +
-            "} else {" +
-                "println(0)" +
-            "}"
+        val code = """
+            var a = 10
+            var b = 20
+            if (a > b) {
+                println(1)
+            } else {
+                println(0)
+            }
+        """.trimIndent()
 
         val expectedTypes: List<Int> = listOf(
             LangParser.VARIABLE,
@@ -70,21 +71,20 @@ class LexerTest {
 
     @Test
     fun fibScenario() {
-        val code =
-            "fun fib(n) {\n" +
-            "    if (n <= 1) {\n" +
-            "        return 1\n" +
-            "    }\n" +
-            "    return fib(n - 1) + fib(n - 2)\n" +
-            "}\n" +
-            "\n" +
-            "var i = 1\n" +
-            "while (i <= 5) {\n" +
-            "    println(i, fib(i))\n" +
-            "    i = i + 1\n" +
-            "}"
-
-        getTypes(code)
+        val code = """
+            fun fib(n) {
+                if (n <= 1) {
+                    return 1
+                }
+                return fib(n - 1) + fib(n - 2)
+            }
+            
+            var i = 1
+            while (i <= 5) {
+                println(i, fib(i))
+                i = i + 1
+            }
+        """.trimIndent()
 
         val expectedTypes: List<Int> = listOf(
             LangParser.FUNCTION,
@@ -151,18 +151,17 @@ class LexerTest {
 
     @Test
     fun nestedFunScenario() {
-        val code =
-            "fun foo(n) {\n" +
-            "    fun bar(m) {\n" +
-            "        return m + n\n" +
-            "    }\n" +
-            "\n" +
-            "    return bar(1)\n" +
-            "}\n" +
-            "\n" +
-            "println(foo(41))"
-
-        getTypes(code)
+        val code = """
+            fun foo(n) {
+                fun bar(m) {
+                    return m + n
+                }
+            
+                return bar(1)
+            }
+            
+            println(foo(41))
+        """.trimIndent()
 
         val expectedTypes: List<Int> = listOf(
             LangParser.FUNCTION,
@@ -202,17 +201,16 @@ class LexerTest {
 
     @Test
     fun complexIfScenario() {
-        val code =
-            "fun f() {\n" +
-            "    var a = 10\n" +
-            "    if ((50 < a && a < 100) || (a % 10 == 0)) {\n" +
-            "        return 1\n" +
-            "    }\n" +
-            "}\n" +
-            "\n" +
-            "println(f())\n"
-
-        getTypes(code)
+        val code = """
+            fun f() {
+                var a = 10
+                if ((50 < a && a < 100) || (a % 10 == 0)) {
+                    return 1
+                }
+            }
+            
+            println(f())
+        """.trimIndent()
 
         val expectedTypes: List<Int> = listOf(
             LangParser.FUNCTION,
@@ -262,9 +260,10 @@ class LexerTest {
 
     @Test
     fun complexMathExpressionScenario() {
-        val code =
-            "var a = 10\n" +
-            "println((a + 1) / (a - 1)) * 101 % 3)\n"
+        val code = """
+            var a = 10
+            println((a + 1) / (a - 1)) * 101 % 3)
+        """.trimIndent()
 
         val expectedTypes: List<Int> = listOf(
             LangParser.VARIABLE,

@@ -14,13 +14,7 @@ class FunctionCallVisitor(): LangBaseVisitor<Int>() {
 
     private fun visitPrintln(ctx: LangParser.Function_callContext): Int {
         val args = ctx.arguments().accept(ArgumentsVisitor(context.copy()))
-        for (i in args.indices) {
-            if (i > 0) {
-                print(' ')
-            }
-            print(args[i])
-        }
-        println()
+        ExecutionContext.stdOut.add(args.joinToString(separator = " "))
         return 0
     }
 

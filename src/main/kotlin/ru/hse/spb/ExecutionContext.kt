@@ -53,6 +53,7 @@ data class ExecutionContext(
     companion object {
         var currentAddress: Int = 0
         var currentScopeId: Int = 0
+        var stdOut: MutableList<String> = ArrayList()
     }
 }
 
