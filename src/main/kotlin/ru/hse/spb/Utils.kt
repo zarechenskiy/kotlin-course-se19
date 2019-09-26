@@ -1,6 +1,6 @@
 package ru.hse.spb
 
-// Автоформаттер сказал так, хотя выглядит это как что-то неправильное.
+// Auto-formatter says it's ok, but it looks ugly for me.
 fun Boolean.toInt() = if (this) {
     1
 } else {

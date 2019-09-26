@@ -93,8 +93,6 @@ val programFibTest = """
         """.trimIndent()
 
 
-// Не представляю, как это правильно отформатировать.
-// Автоформаттер предлагает так.
 val treeFibTest = FplTree(listOf(
         Fun("fib", listOf("n"),
                 FplTree(listOf(
