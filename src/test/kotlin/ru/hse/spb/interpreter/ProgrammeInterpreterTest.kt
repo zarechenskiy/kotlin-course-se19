@@ -18,6 +18,33 @@ class ProgrammeInterpreterTest {
     }
 
     @Test
+    fun recursiveFunctionTest() {
+        val program = """
+            |fun fib(n) {
+            |   if (n <= 1) {
+            |       return 1
+            |   }
+            |   return fib(n - 1) + fib(n - 2)
+            |}
+            |return fib(6)
+        """.trimMargin()
+        assertEquals(13, execute(program))
+    }
+
+    @Test
+    fun whileBlockTest() {
+        val program = """
+            |var i = 1
+            |while (i <= 5) {
+            |    println(i)
+            |    i = i + 1
+            |}
+            |return i
+        """.trimMargin()
+        assertEquals(6, execute(program))
+    }
+
+    @Test
     fun returnInterpretationTest() {
         val program = """
             |var a = 2
@@ -28,7 +55,7 @@ class ProgrammeInterpreterTest {
             |   if (a < d) {
             |       return b + c
             |   }
-            |   return 3
+            |   return 42
             |}
             |
             |return foo(3, 2)
@@ -46,7 +73,7 @@ class ProgrammeInterpreterTest {
             |   return a + d
             |}
             |
-            |return 3
+            |return 42
         """.trimMargin()
         assertEquals(5, execute(program))
     }
@@ -65,13 +92,13 @@ class ProgrammeInterpreterTest {
             |   }
             |}
             |
-            |return 3
+            |return 42
         """.trimMargin()
-        //assertEquals(5, execute(program))
+        assertEquals(1, execute(program))
     }
 
     @Test
-    fun functionInterpretationTest() {
+    fun changeValueInDifferentScopeTest() {
         val program = """
             |var a = 2
             |fun foo(b, c) {
@@ -81,7 +108,7 @@ class ProgrammeInterpreterTest {
             |foo(3, 2)
             |return a
         """.trimMargin()
-        execute(program)
+        assertEquals(5, execute(program))
     }
 
     @Test

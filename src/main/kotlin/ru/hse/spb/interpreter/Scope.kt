@@ -3,7 +3,7 @@ package ru.hse.spb.interpreter
 import ru.hse.spb.parser.ProgrammeParser.FunctionContext
 
 data class Scope(val parentScope: Scope?) {
-    var exit: Boolean = false
+
     var variableTable = mutableMapOf<String, Int>()
     var functionTable = mutableMapOf<String, FunctionContext>()
 

@@ -7,6 +7,7 @@ import kotlin.streams.toList
 private const val ZERO = 0
 
 class ProgrammeVisitor : ProgrammeBaseVisitor<Int>() {
+    var exit: Boolean = false
 
     var scope: Scope = Scope(null)
 
@@ -18,7 +19,7 @@ class ProgrammeVisitor : ProgrammeBaseVisitor<Int>() {
         var returnValue = ZERO
         for (statement in ctx.statements) {
             returnValue = statement.accept(this)
-            if (scope.exit) {
+            if (exit) {
                 return returnValue
             }
         }
@@ -26,15 +27,10 @@ class ProgrammeVisitor : ProgrammeBaseVisitor<Int>() {
     }
 
     override fun visitBlockWithBraces(ctx: BlockWithBracesContext): Int {
-        switchContextTo(Scope(scope))
+        scope = Scope(scope)
         val returnValue = ctx.block().accept(this)
-        switchContextTo(scope.parentScope!!)
+        scope = scope.parentScope!!
         return returnValue
-    }
-
-    fun switchContextTo(newScope: Scope) {
-        newScope.exit = scope.exit
-        scope = newScope
     }
 
     override fun visitStatement(ctx: StatementContext): Int {
@@ -68,7 +64,7 @@ class ProgrammeVisitor : ProgrammeBaseVisitor<Int>() {
 
     override fun visitBlockWhile(ctx: BlockWhileContext): Int {
         var returnValue = ZERO
-        while (ctx.expression().accept(this) != 0 && !scope.exit) {
+        while (ctx.expression().accept(this) != 0 && !exit) {
             returnValue = ctx.whileBlockWithBraces.accept(this)
         }
         return returnValue
@@ -77,7 +73,7 @@ class ProgrammeVisitor : ProgrammeBaseVisitor<Int>() {
     override fun visitBrockIf(ctx: BrockIfContext): Int {
         return when (ctx.expression().accept(this) != 0) {
             true -> ctx.ifBlockWithBraces.accept(this)
-            false -> ctx.ifBlockWithBraces?.accept(this) ?: ZERO
+            false -> ctx.elseBlockWithBraces?.accept(this) ?: ZERO
         }
     }
 
@@ -91,28 +87,40 @@ class ProgrammeVisitor : ProgrammeBaseVisitor<Int>() {
     }
 
     override fun visitReturnStatement(ctx: ReturnStatementContext): Int {
-        scope.exit = true
-        return ctx.expression().accept(this)
+        val returnValue = ctx.expression().accept(this)
+        exit = true
+        return returnValue
     }
 
-    fun acceptFunctionBlockWithBraces(ctx: BlockContext, inScope: Scope, outScope: Scope): Int {
-        switchContextTo(inScope)
-        val returnValue = ctx.accept(this)
-        switchContextTo(outScope)
+    fun acceptFunctionBlockWithBraces(ctx: BlockWithBracesContext, inScope: Scope, outScope: Scope): Int {
+        scope = inScope
+        val returnValue = ctx.block().accept(this)
+        scope = outScope
         return returnValue
     }
 
     override fun visitFunctionCall(ctx: FunctionCallContext): Int {
         val functionName = ctx.IDENTIFIER().text
+        val argValues = ctx.arguments.stream().map { arg -> arg.accept(this) }.toList()
+
+        if (functionName == "println") {
+            println(argValues.joinToString(" "))
+            return ZERO
+        }
+
         val (fctx, fscope) = scope.getFunction(functionName) ?: error("No function $functionName in scope")
 
-        val argValues = ctx.arguments.stream().map { arg -> arg.accept(this) }.toList()
         val argNames = fctx.parameters().parameterNames.stream().map { param -> param.text }.toList()
+
+        if (argNames.size != argValues.size) {
+            error("Wrong parameter number. Expected ${argNames.size}, but got ${argValues.size}")
+        }
 
         val inScope = Scope(fscope)
         inScope.addVariables(argNames, argValues)
-        val returnValue = acceptFunctionBlockWithBraces(fctx.blockWithBraces().block(), inScope, scope)
-        scope.exit = false
+        val returnValue = acceptFunctionBlockWithBraces(fctx.blockWithBraces(), inScope, scope)
+
+        exit = false
         return returnValue
     }
 
@@ -140,8 +148,8 @@ class ProgrammeVisitor : ProgrammeBaseVisitor<Int>() {
 
     override fun visitEqualityExp(ctx: EqualityExpContext): Int {
         return when(ctx.OP_EQUAL()?.text) {
-            "==" -> (ctx.relationalExp(0).accept(this) < ctx.relationalExp(1).accept(this)).toInt()
-            "!=" -> (ctx.relationalExp(0).accept(this) > ctx.relationalExp(1).accept(this)).toInt()
+            "==" -> (ctx.relationalExp(0).accept(this) == ctx.relationalExp(1).accept(this)).toInt()
+            "!=" -> (ctx.relationalExp(0).accept(this) != ctx.relationalExp(1).accept(this)).toInt()
             else -> ctx.relationalExp(0).accept(this)
         }
     }

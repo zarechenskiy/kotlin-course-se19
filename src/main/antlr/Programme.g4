@@ -33,7 +33,7 @@ function
 
 //PARAMETER_NAMES = IDENTIFIER{,}
 parameters
-    : parameterNames+=IDENTIFIER (',' parameterNames+=IDENTIFIER)*
+    : (parameterNames+=IDENTIFIER (',' parameterNames+=IDENTIFIER)*)?
     ;
 
 //VARIABLE = "var" IDENTIFIER ("=" EXPRESSION)?
@@ -68,7 +68,7 @@ expression
 //FUNCTION_CALL = IDENTIFIER "(" ARGUMENTS ")"
 //ARGUMENTS = EXPRESSION{","}
 functionCall
-    : IDENTIFIER '(' arguments+=expression (',' arguments+=expression)* ')'
+    : IDENTIFIER '(' (arguments+=expression (',' arguments+=expression)*)? ')'
     ;
 
 binaryExpression
@@ -160,10 +160,15 @@ LITERAL
     : ('0' | ('1'..'9')+('0'..'9')*)
     ;
 
+COMMENT
+    :   '//'(~[\r\n])* -> skip
+    ;
+
 NEWLINE
     : [\r\n]+
     ;
 
 SPACES
-    : (' ' | '\t' ) -> skip
+    : (' ' | '\t') -> skip
     ;
+
