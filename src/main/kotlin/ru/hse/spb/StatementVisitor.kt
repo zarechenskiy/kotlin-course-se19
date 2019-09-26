@@ -2,6 +2,8 @@ package ru.hse.spb
 
 import ru.hse.spb.parser.LangBaseVisitor
 import ru.hse.spb.parser.LangParser
+import java.lang.Exception
+import java.lang.IllegalStateException
 
 class StatementVisitor() : LangBaseVisitor<Void?>() {
 
@@ -35,22 +37,28 @@ class StatementVisitor() : LangBaseVisitor<Void?>() {
 
     override fun visitFunction(ctx: LangParser.FunctionContext?): Void? {
         val functionName = ctx!!.IDENTIFIER()!!.text!!
-        check(!(context.definedFunctions.containsKey(functionName) || functionName == "println")) {
-            "Multiply definition of function $functionName " +
-            "at line ${ctx.start.line}"
+        if (functionName != "println") {
+            try {
+                context.addFunction(functionName, ctx)
+            } catch (e: Exception) {
+                throw IllegalStateException(
+                    "Parsing error at line ${ctx.start.line}",
+                    e
+                )
+            }
         }
-        context.definedFunctions[functionName] = ctx
         return null
     }
 
     override fun visitAssignment(ctx: LangParser.AssignmentContext?): Void? {
-        check(!(ctx?.IDENTIFIER() == null || ctx.expression() == null)) {
+        val name = ctx?.IDENTIFIER()?.text
+        check(!(name == null || ctx.expression() == null)) {
             "Parsing error at line: ${ctx?.start?.line}"
         }
-        check(context.varValues.containsKey(ctx!!.IDENTIFIER().text)) {
-            "Can not set value to the undefined variable: ${ctx.IDENTIFIER().text}"
+        check(context.varAddresses.containsKey(name)) {
+            "Can not set value to the undefined variable $name"
         }
-        context.varValues[ctx.IDENTIFIER().text] = ctx.expression().accept(ExpressionVisitor(context))
+        context.varValues[context.varAddresses[name]!!] = ctx.expression().accept(ExpressionVisitor(context))
         return null
     }
 
@@ -62,7 +70,6 @@ class StatementVisitor() : LangBaseVisitor<Void?>() {
             }
             val nextContext = context.copy()
             ctx.block_with_braces()!!.block().accept(BlockVisitor(nextContext))
-            context.updateVariables(nextContext)
             if (nextContext.resultValue != null) {
                 context.resultValue = nextContext.resultValue
                 break
@@ -82,7 +89,6 @@ class StatementVisitor() : LangBaseVisitor<Void?>() {
         if (nextContext.resultValue != null) {
             context.resultValue = nextContext.resultValue
         }
-        context.updateVariables(nextContext)
         return null
     }
 
@@ -92,7 +98,14 @@ class StatementVisitor() : LangBaseVisitor<Void?>() {
         if (ctx.expression() != null) {
             value = ctx.expression().accept(ExpressionVisitor(context))
         }
-        context.varValues[name] = value
+        try {
+            context.addVariable(name, value)
+        } catch (e: Exception) {
+            throw IllegalStateException(
+                "Parsing error at line ${ctx.start.line}",
+                e
+            )
+        }
         return null
     }
 }

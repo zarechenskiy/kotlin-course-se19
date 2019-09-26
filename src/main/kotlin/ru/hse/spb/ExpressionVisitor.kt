@@ -17,12 +17,12 @@ class ExpressionVisitor(): LangBaseVisitor<Int>() {
             return ctx.middle.accept(this)
         }
 
-        if (ctx?.IDENTIFIER() != null) {
-            val value = context.getVariableValue(ctx.IDENTIFIER().text)
-            if (value != null) {
-                return value
+        if (ctx?.IDENTIFIER()?.text != null) {
+            val address = context.varAddresses[ctx.IDENTIFIER().text]
+            if (address != null && context.varValues.containsKey(address)) {
+                return context.varValues[address]!!
             } else {
-                throw IllegalStateException("Can not use undefined varible: ${ctx.IDENTIFIER()}")
+                throw IllegalStateException("Can not use undefined variable: ${ctx.IDENTIFIER().text}")
             }
         }
 

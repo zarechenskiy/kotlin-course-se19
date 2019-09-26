@@ -1,2 +1,10 @@
 var a = 10
-println((a + 1) / (a - 1)) * 101 % 3)
+
+a = 15
+
+if (a > 10) {
+    var a = 5
+    println(a)
+}
+
+println(a)

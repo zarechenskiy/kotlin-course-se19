@@ -2,6 +2,7 @@ package ru.hse.spb
 
 import ru.hse.spb.parser.LangBaseVisitor
 import ru.hse.spb.parser.LangParser
+import java.lang.IllegalStateException
 
 class FunctionCallVisitor(): LangBaseVisitor<Int>() {
 
@@ -30,23 +31,26 @@ class FunctionCallVisitor(): LangBaseVisitor<Int>() {
             return visitPrintln(ctx)
         }
 
-        check(context.definedFunctions.containsKey(functionName)) {
+        check(context.funAddresses.containsKey(functionName)) {
             "Can not call undefined function: ${ctx.IDENTIFIER().text}"
         }
 
-        val functionCtx = context.definedFunctions[functionName]
+        val functionAddress = context.funAddresses[functionName]
+        val functionCtx = context.funDefinition[functionAddress]
 
         checkNotNull(functionCtx?.parameter_names()?.IDENTIFIER()) {
             "Parsing error at line ${functionCtx?.start?.line}"
         }
 
         val expectedArgsNumber = functionCtx!!.parameter_names().IDENTIFIER().size
-        val foundArgsNumber = if (ctx.arguments()?.expression() != null) ctx.arguments().expression().size else 0
+        val foundArgsNumber = ctx.arguments()?.expression()?.size ?: 0
 
-        check(expectedArgsNumber == foundArgsNumber) { "Incorrect number of arguments: expected " +
+        check(expectedArgsNumber == foundArgsNumber) {
+            "Incorrect number of arguments: expected " +
             "$expectedArgsNumber" +
             ", but found " +
-            "$foundArgsNumber" }
+            "$foundArgsNumber"
+        }
 
         if (functionCtx.block_with_braces()?.block() == null) {
             return 0
@@ -60,14 +64,17 @@ class FunctionCallVisitor(): LangBaseVisitor<Int>() {
             if (args != null && args.isNotEmpty()) {
                 val names = functionCtx.parameter_names().IDENTIFIER().map { it.text }
                 for (i in args.indices) {
-                    nextContext.varValues[names[i]] = args[i]
+                    nextContext.addVariable(names[i], args[i])
                 }
+            } else {
+                throw IllegalStateException(
+                    "Parsing error at line ${ctx.start.line}: " +
+                    "can not evaluate arguments for function defined at line ${functionCtx.start.line}"
+                )
             }
-
         }
 
         functionCtx.block_with_braces().block().accept(BlockVisitor(nextContext))
-        context.updateVariables(nextContext)
 
         return nextContext.resultValue ?: 0
     }
