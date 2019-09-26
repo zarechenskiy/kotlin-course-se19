@@ -3,7 +3,7 @@ package ru.hse.spb
 import org.antlr.v4.runtime.ParserRuleContext
 
 /**
- *
+ * Map that returns object of type T from the given string name in the given scope or it's parent scope.
  */
 class Scope<T>(private val parentScope: Scope<T>?, private var scopedType: String? = null) {
     private val scoped = mutableMapOf<String, T?>()

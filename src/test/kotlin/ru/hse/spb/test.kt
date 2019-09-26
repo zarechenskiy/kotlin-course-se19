@@ -88,4 +88,21 @@ class TestSource {
 
         runTestOnFile(content, expected)
     }
+
+    @Test
+    fun testEarlyReturn() {
+        val content = "fun foo(n) {\n" +
+                "    fun bar(m) {\n" +
+                "        return m + n\n" +
+                "    }\n" +
+                "\n" +
+                "    return bar(1)\n" +
+                "}\n" +
+                "\n" +
+                "println(foo(41)) // prints 42"
+
+        val expected = "42"
+
+        runTestOnFile(content, expected)
+    }
 }
