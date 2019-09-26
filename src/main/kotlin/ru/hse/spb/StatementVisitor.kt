@@ -65,6 +65,7 @@ class StatementVisitor() : LangBaseVisitor<Void?>() {
             }
             val nextContext = context.copy()
             ctx.block_with_braces()!!.block().accept(BlockVisitor(nextContext))
+            context.updateVariables(nextContext)
             if (nextContext.resultValue != null) {
                 context.resultValue = nextContext.resultValue
                 break
@@ -84,6 +85,7 @@ class StatementVisitor() : LangBaseVisitor<Void?>() {
         if (nextContext.resultValue != null) {
             context.resultValue = nextContext.resultValue
         }
+        context.updateVariables(nextContext)
         return null
     }
 

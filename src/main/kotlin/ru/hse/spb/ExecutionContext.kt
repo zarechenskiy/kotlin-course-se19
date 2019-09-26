@@ -12,6 +12,12 @@ data class ExecutionContext(
     }
 
     fun copy(): ExecutionContext = ExecutionContext(varValues.copy(), definedFunctions.copy(), resultValue)
+
+    fun updateVariables(from: ExecutionContext) {
+        for (name in varValues.keys) {
+            varValues[name] = from.varValues[name]!!
+        }
+    }
 }
 
 fun <U, V> MutableMap<U, V>.copy(): MutableMap<U, V> {

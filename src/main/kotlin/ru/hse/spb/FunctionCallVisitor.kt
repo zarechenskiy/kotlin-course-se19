@@ -70,6 +70,7 @@ class FunctionCallVisitor(): LangBaseVisitor<Int>() {
         }
 
         functionCtx.block_with_braces().block().accept(BlockVisitor(nextContext))
+        context.updateVariables(nextContext)
 
         return nextContext.resultValue ?: 0
     }
