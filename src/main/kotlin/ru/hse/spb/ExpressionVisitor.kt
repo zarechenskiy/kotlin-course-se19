@@ -3,6 +3,9 @@ package ru.hse.spb
 import ru.hse.spb.parser.LangBaseVisitor
 import ru.hse.spb.parser.LangParser
 
+/**
+ * Visitor for evaluating expression
+ * */
 class ExpressionVisitor(): LangBaseVisitor<Int>() {
 
     private var context = ExecutionContext()
@@ -11,6 +14,11 @@ class ExpressionVisitor(): LangBaseVisitor<Int>() {
         this.context = context
     }
 
+    /**
+     * Evaluates expression
+     *
+     * @return the result of evaluating accroding to the current address scope and math rule of evaluating
+     * */
     override fun visitExpression(ctx: LangParser.ExpressionContext?): Int {
         if (ctx?.LPAREN() != null) {
             check(ctx.middle != null) { "Parsing error at line ${ctx.start.line}" }

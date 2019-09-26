@@ -5,6 +5,9 @@ import ru.hse.spb.parser.LangParser
 import java.lang.Exception
 import java.lang.IllegalStateException
 
+/**
+ * Visitor for evaluting statement
+ */
 class StatementVisitor() : LangBaseVisitor<Void?>() {
 
     private var context = ExecutionContext()
@@ -13,6 +16,9 @@ class StatementVisitor() : LangBaseVisitor<Void?>() {
         this.context = context
     }
 
+    /**
+     * Chooses the type of statement and visit it
+     * */
     override fun visitStatement(ctx: LangParser.StatementContext?): Void? {
         if (ctx == null) {
             return null
@@ -35,6 +41,10 @@ class StatementVisitor() : LangBaseVisitor<Void?>() {
         return null
     }
 
+    /**
+     * Process of function declaration and checks all conditions
+     * which should be satisfied
+     * */
     override fun visitFunction(ctx: LangParser.FunctionContext?): Void? {
         val functionName = ctx!!.IDENTIFIER()!!.text!!
         if (functionName != "println") {
@@ -50,6 +60,10 @@ class StatementVisitor() : LangBaseVisitor<Void?>() {
         return null
     }
 
+    /**
+     * Assigns value to the variable if last one exists, otherwise
+     * exception with appropriate message will be thrown
+     * */
     override fun visitAssignment(ctx: LangParser.AssignmentContext?): Void? {
         val name = ctx?.IDENTIFIER()?.text
         check(!(name == null || ctx.expression() == null)) {
@@ -62,6 +76,9 @@ class StatementVisitor() : LangBaseVisitor<Void?>() {
         return null
     }
 
+    /**
+     * Process while statement
+     * */
     override fun visitWhile_expr(ctx: LangParser.While_exprContext?): Void? {
         while (true) {
             val conditionValue = ctx!!.expression().accept(ExpressionVisitor(context))
@@ -78,6 +95,9 @@ class StatementVisitor() : LangBaseVisitor<Void?>() {
         return null
     }
 
+    /**
+     * Process if statement
+     * */
     override fun visitIf_expr(ctx: LangParser.If_exprContext?): Void? {
         val conditionValue = ctx!!.expression().accept(ExpressionVisitor(context))
         val nextContext = context.copy()
@@ -92,6 +112,10 @@ class StatementVisitor() : LangBaseVisitor<Void?>() {
         return null
     }
 
+    /**
+     * Process of variable declaration and checks all conditions
+     * which should be satisfied
+     * */
     override fun visitVariable(ctx: LangParser.VariableContext?): Void? {
         val name = ctx!!.IDENTIFIER().text
         var value = 0

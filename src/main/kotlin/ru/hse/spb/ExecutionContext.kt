@@ -2,6 +2,11 @@ package ru.hse.spb
 
 import ru.hse.spb.parser.LangParser
 
+/**
+ * Model for storing current evaluating context
+ * including variables and functions addresses,
+ * current scope and names of entities
+ * */
 data class ExecutionContext(
     val addressScope: MutableMap<Int, Int> = HashMap(),
     val varAddresses: MutableMap<String, Int> = HashMap(),
@@ -15,6 +20,9 @@ data class ExecutionContext(
         scopeId = currentScopeId++
     }
 
+    /**
+     * Copies address space
+     * */
     fun copy(): ExecutionContext = ExecutionContext(
         addressScope.copy(),
         varAddresses.copy(),
@@ -24,6 +32,9 @@ data class ExecutionContext(
         resultValue
     )
 
+    /**
+     * Checks conditions and adds variable into the address scope
+     * */
     fun addVariable(name: String, value: Int) {
         check(!funAddresses.containsKey(name)) {
             "Can no define variable $name: function with such a name has been already defined"
@@ -37,6 +48,9 @@ data class ExecutionContext(
         varValues[address] = value
     }
 
+    /**
+     * Checks conditions and adds function into the address scope
+     * */
     fun addFunction(name: String, ctx: LangParser.FunctionContext) {
         check(!varAddresses.containsKey(name)) {
             "Can no define function $name: variable with such a name has been already defined"
