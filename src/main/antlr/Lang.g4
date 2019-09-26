@@ -7,7 +7,7 @@ FUNCTION           : 'fun' ;
 WHILE              : 'while' ;
 IF                 : 'if' ;
 ELSE               : 'else' ;
-RET                : 'ret' ;
+RET                : 'return' ;
 
 IDENTIFIER         : [a-zA-Z_][a-zA-Z0-9_]* ;
 
@@ -45,11 +45,11 @@ file                         : block ;
 
 statement                    : function
                              | assignment
-                             | expression
                              | variable
+                             | return_expr
                              | while_expr
                              | if_expr
-                             | return_expr ;
+                             | expression ;
 
 block                        : (statement (WS+ statement)*)? ;
 
@@ -85,6 +85,4 @@ expression                   : WS* function_call
 
 function_call                : WS* IDENTIFIER WS* LPAREN WS* arguments WS* RPAREN ;
 
-arguments                    : WS* (expression (WS* SEPARATOR WS* expression)*) ;
-
-
+arguments                    : (expression (WS* SEPARATOR WS* expression)*)? ;

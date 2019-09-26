@@ -60,7 +60,7 @@ class ExpressionVisitor(): LangBaseVisitor<Int>() {
         }
 
         if (ctx?.function_call() != null) {
-            return ctx.function_call().accept(this)
+            return ctx.function_call().accept(FunctionCallVisitor(context.copy()))
         }
 
         throw IllegalStateException("Parsing error at line ${ctx?.getStart()?.line}")

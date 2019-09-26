@@ -3,7 +3,7 @@ package ru.hse.spb
 import ru.hse.spb.parser.LangBaseVisitor
 import ru.hse.spb.parser.LangParser
 
-class BlockVisitor(): LangBaseVisitor<Int>() {
+class BlockVisitor(): LangBaseVisitor<Void?>() {
 
     private var context = ExecutionContext()
 
@@ -11,16 +11,17 @@ class BlockVisitor(): LangBaseVisitor<Int>() {
         this.context = context
     }
 
-    override fun visitBlock(ctx: LangParser.BlockContext?): Int {
+    override fun visitBlock(ctx: LangParser.BlockContext?): Void? {
         if (ctx == null) {
-            return 0
+            context.resultValue = 0
+            return null
         }
         for (s in ctx.statement()) {
-            val result = s.accept(StatementVisitor(context))
-            if (result != null) {
-                return result
+            s.accept(StatementVisitor(context))
+            if (context.resultValue != null) {
+                return null
             }
         }
-        return 0
+        return null
     }
 }
