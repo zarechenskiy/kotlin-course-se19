@@ -269,4 +269,20 @@ class CombineTest {
         """.trimIndent()
         assertTrue(checkExceptionThrown(code))
     }
+
+    @Test
+    fun noReturnFun() {
+        val code = """
+            fun a() {
+                println(12)
+            }
+            println(a())
+        """.trimIndent()
+
+        val foundStdout = getStdout(code)
+        val expectedStdout = listOf("12", "0")
+
+        assertArrayEquals(expectedStdout.toTypedArray(), foundStdout.toTypedArray())
+    }
+
 }
