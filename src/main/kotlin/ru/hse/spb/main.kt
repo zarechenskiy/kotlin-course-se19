@@ -1,13 +1,25 @@
 package ru.hse.spb
 
-fun getGreeting(): String {
-    val words = mutableListOf<String>()
-    words.add("Hello,")
-    words.add("world!")
+import org.antlr.v4.runtime.BufferedTokenStream
+import org.antlr.v4.runtime.CharStreams
+import ru.hse.spb.parser.FunCallLexer
+import ru.hse.spb.parser.FunCallParser
+import java.io.File
+import java.rmi.UnexpectedException
 
-    return words.joinToString(separator = " ")
-}
+
+private val program = """
+    |println(1+1)
+""".trimMargin()
 
 fun main(args: Array<String>) {
-    println(getGreeting())
+    val fileName = args[0]
+    if (File(fileName).exists()) {
+//        val lexer = FunCallLexer(CharStreams.fromFileName(args[0]))
+        val lexer = FunCallLexer(CharStreams.fromString(program))
+        val parser = FunCallParser(BufferedTokenStream(lexer))
+        parser.file().accept(StatementsEvaluationVisitor())
+    } else {
+        throw UnexpectedException("file $fileName is not exists")
+    }
 }
