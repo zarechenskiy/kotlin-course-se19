@@ -12,7 +12,7 @@ fun main(args: Array<String>) {
     val lexer = FunLanguageLexer(CharStreams.fromFileName(args[0]))
     val parser = FunLanguageParser(CommonTokenStream(lexer))
 
-    parser.file().accept(Interpreter())
+    print(parser.file().accept(Interpreter()))
 }
 
 object BuiltIns {
@@ -73,6 +73,7 @@ class Interpreter : FunLanguageBaseVisitor<ReturnValue>() {
             ctx.r_if() != null -> return ctx.r_if().accept(this)
             ctx.r_return() != null -> return ctx.r_return().accept(this)
             ctx.r_while() != null -> return ctx.r_while().accept(this)
+            ctx.variable() != null -> return ctx.variable().accept(this)
         }
         return ReturnValue(false, ret = true)
     }
@@ -227,7 +228,7 @@ class Interpreter : FunLanguageBaseVisitor<ReturnValue>() {
             }
         }
         var result = values[0]
-        for (i in 1..values.size) {
+        for (i in 1 until values.size) {
             result = result.or(values[i])
         }
         return if (result) {
@@ -253,7 +254,7 @@ class Interpreter : FunLanguageBaseVisitor<ReturnValue>() {
             }
         }
         var result = values[0]
-        for (i in 1..values.size) {
+        for (i in 1 until values.size) {
             result = result.and(values[i])
         }
         return if (result) {
@@ -274,7 +275,7 @@ class Interpreter : FunLanguageBaseVisitor<ReturnValue>() {
             values.add(value.value)
         }
         var result = values[0]
-        for (i in 1..values.size) {
+        for (i in 1 until values.size) {
             when {
                 ctx.ops[i - 1].text == "==" -> result = if (result == values[i]) 1 else 0
                 ctx.ops[i - 1].text == "!=" -> result = if (result == values[i]) 0 else 1
@@ -293,7 +294,7 @@ class Interpreter : FunLanguageBaseVisitor<ReturnValue>() {
             values.add(value.value)
         }
         var result = values[0]
-        for (i in 1..values.size) {
+        for (i in 1 until values.size) {
             when {
                 ctx.ops[i - 1].text == "<" -> result = if (result < values[i]) 1 else 0
                 ctx.ops[i - 1].text == "<=" -> result = if (result <= values[i]) 1 else 0
@@ -314,7 +315,7 @@ class Interpreter : FunLanguageBaseVisitor<ReturnValue>() {
             values.add(value.value)
         }
         var result = values[0]
-        for (i in 1..values.size) {
+        for (i in 1 until values.size) {
             when {
                 ctx.ops[i - 1].text == "+" -> result += values[i]
                 ctx.ops[i - 1].text == "-" -> result -= values[i]
@@ -333,7 +334,7 @@ class Interpreter : FunLanguageBaseVisitor<ReturnValue>() {
             values.add(value.value)
         }
         var result = values[0]
-        for (i in 1..values.size) {
+        for (i in 1 until values.size) {
             when {
                 ctx.ops[i - 1].text == "*" -> result *= values[i]
                 ctx.ops[i - 1].text == "/" -> {

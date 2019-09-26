@@ -4,16 +4,16 @@ file : block ;
 block : (statements+=statement)* ;
 block_with_braces : '{' block '}' ;
 statement : function | variable | expression | r_while | r_if | assignment | r_return ;
-function : 'fun' SPACES name '(' parameter_names ')' block_with_braces ;
-variable : 'var' SPACES name ('=' expression)? ;
+function : 'fun' name '(' parameter_names ')' block_with_braces ;
+variable : 'var' name ('=' expression)? ;
 parameter_names : (names+=name (',' names+=name)*)? ;
 r_while : 'while' '(' expression ')' block_with_braces ;
 r_if : 'if' '(' expression ')' block_with_braces ('else' block_with_braces)? ;
 assignment : name '=' expression ;
-r_return : 'return' SPACES expression ;
+r_return : 'return' expression ;
 expression : function_call | binary_expression | name | constant | '(' expression ')' ;
 function_call : name '(' arguments ')' ;
-arguments : (expressions+=expression (',' expressions+=expression))? ;
+arguments : (expressions+=expression (',' expressions+=expression)*)? ;
 name : IDENTIFIER ;
 constant : LITERAL ;
 
@@ -28,6 +28,5 @@ base_binary_expression : function_call | name | constant | '(' expression ')' ;
 
 IDENTIFIER : [_a-zA-Z][_a-zA-Z0-9]* ;
 LITERAL : '0'|('-')?([1-9])([0-9])* ;
-SPACES : ' '+ ;
-COMMENT : '//' ~[\n\r]* -> channel(HIDDEN);
+COMMENT : '//' (~[\n\r])* -> channel(HIDDEN);
 WS : [ \n\r]+ -> channel(HIDDEN);
