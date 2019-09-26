@@ -29,5 +29,5 @@ base_binary_expression : function_call | name | constant | '(' expression ')' ;
 IDENTIFIER : [_a-zA-Z][_a-zA-Z0-9]* ;
 LITERAL : '0'|('-')?([1-9])([0-9])* ;
 SPACES : ' '+ ;
-COMMENT : '//' ~[\n\r] -> skip ;
-WS : [ \n\r] -> skip ;
+COMMENT : '//' ~[\n\r]* -> channel(HIDDEN);
+WS : [ \n\r]+ -> channel(HIDDEN);

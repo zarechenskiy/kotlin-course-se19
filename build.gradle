@@ -1,13 +1,23 @@
 plugins {
     id 'java'
     id 'antlr'
+    id 'application'
     id 'org.jetbrains.kotlin.jvm' version '1.2.61'
 }
 
+
 group 'ru.hse.spb'
 version '1.0-SNAPSHOT'
-
+mainClassName = 'ru.hse.spb.MainKt'
 sourceCompatibility = 1.8
+
+sourceSets {
+    main.kotlin.srcDirs += 'src/main/kotlin'
+    generated {
+        java.srcDir 'build/generated-src/antlr/main/'
+    }
+}
+compileJava.source sourceSets.generated.java
 
 repositories {
     mavenCentral()
@@ -17,16 +27,18 @@ dependencies {
     compile "org.antlr:antlr4-runtime:4.7"
     antlr "org.antlr:antlr4:4.7"
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation "org.jetbrains.kotlin:kotlin-reflect"
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
 generateGrammarSource {
     maxHeapSize = "64m"
     arguments += ['-package', 'ru.hse.spb.parser', '-visitor']
-    outputDirectory = new File("src/main/antlr/ru/hse/spb/parser")
+    outputDirectory = new File("build/generated-src/antlr/main/ru/hse/spb/parser")
 }
 
 compileKotlin.dependsOn generateGrammarSource
+compileJava.dependsOn generateGrammarSource
 
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"

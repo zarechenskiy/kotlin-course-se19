@@ -5,12 +5,32 @@ import org.antlr.v4.runtime.CommonTokenStream
 import ru.hse.spb.parser.FunLanguageBaseVisitor
 import ru.hse.spb.parser.FunLanguageLexer
 import ru.hse.spb.parser.FunLanguageParser
+import kotlin.reflect.KFunction
+import kotlin.reflect.full.declaredMemberFunctions
 
 fun main(args: Array<String>) {
     val lexer = FunLanguageLexer(CharStreams.fromFileName(args[0]))
     val parser = FunLanguageParser(CommonTokenStream(lexer))
 
     parser.file().accept(Interpreter())
+}
+
+object BuiltIns {
+    object Functions {
+        fun println(vararg output: Int) {
+            println(output)
+        }
+    }
+
+    class BuiltInFunction(private val kFunction: KFunction<*>) {
+        fun call(vararg arguments: Any?) {
+            kFunction.call(Functions, *arguments)
+        }
+    }
+
+    val functions = Functions::class
+            .declaredMemberFunctions
+            .associate { it.name to BuiltInFunction(it) }
 }
 
 class Interpreter : FunLanguageBaseVisitor<ReturnValue>() {
@@ -59,7 +79,7 @@ class Interpreter : FunLanguageBaseVisitor<ReturnValue>() {
 
     override fun visitFunction(ctx: FunLanguageParser.FunctionContext) : ReturnValue {
         if (!functionSpace!!.addValue(ctx.name(), Pair(ctx.parameter_names(), ctx.block_with_braces().block()))) {
-            print("Function Definition")
+            println("Function Definition")
             return ReturnValue(false, ret = true)
         }
         return ReturnValue()
@@ -75,7 +95,7 @@ class Interpreter : FunLanguageBaseVisitor<ReturnValue>() {
             value = res.value
         }
         if (!variableSpace!!.addValue(ctx.name(), value)) {
-            print("Variable Definition")
+            println("Variable Definition")
             return ReturnValue(false, ret = true)
         }
         return ReturnValue()
@@ -119,7 +139,7 @@ class Interpreter : FunLanguageBaseVisitor<ReturnValue>() {
             return value
         }
         if (!variableSpace!!.updateValue(ctx.name(), value.value)) {
-            print("Variable not found")
+            println("Variable not found")
             return ReturnValue(false, ret = true)
         }
         return ReturnValue()
@@ -147,13 +167,13 @@ class Interpreter : FunLanguageBaseVisitor<ReturnValue>() {
     override fun visitFunction_call(ctx: FunLanguageParser.Function_callContext): ReturnValue {
         val description = functionSpace!!.getValue(ctx.name())
         if (description == null) {
-            print("Function definition not found")
+            println("Function definition not found")
             return ReturnValue(false, ret = true)
         }
         val names = description.first.names
         val args = ctx.arguments().expressions
         if (names.size != args.size) {
-            print("Arguments amount does not match")
+            println("Arguments amount does not match")
             return ReturnValue(false, ret = true)
         }
         try {
@@ -162,7 +182,7 @@ class Interpreter : FunLanguageBaseVisitor<ReturnValue>() {
             for (i in names.indices) {
                 val variableValue = variableSpace!!.parent!!.getValue(args[i].name())
                 if (variableValue == null) {
-                    print("Variable not found")
+                    println("Variable not found")
                     return ReturnValue(false, ret = true)
                 }
                 variableSpace!!.addValue(names[i], variableValue)
@@ -178,7 +198,7 @@ class Interpreter : FunLanguageBaseVisitor<ReturnValue>() {
     override fun visitName(ctx: FunLanguageParser.NameContext): ReturnValue {
         val variableValue = variableSpace!!.getValue(ctx)
         if (variableValue == null) {
-            print("Variable not found")
+            println("Variable not found")
             return ReturnValue(false, ret = true)
         }
         return ReturnValue(true, ret = false, value = variableValue)
@@ -318,14 +338,14 @@ class Interpreter : FunLanguageBaseVisitor<ReturnValue>() {
                 ctx.ops[i - 1].text == "*" -> result *= values[i]
                 ctx.ops[i - 1].text == "/" -> {
                     if (values[i] == 0) {
-                        print("Division by zero")
+                        println("Division by zero")
                         return ReturnValue(false, ret = true)
                     }
                     result /= values[i]
                 }
                 ctx.ops[i - 1].text == "%" -> {
                     if (values[i] == 0) {
-                        print("Division by zero")
+                        println("Division by zero")
                         return ReturnValue(false, ret = true)
                     }
                     result %= values[i]
