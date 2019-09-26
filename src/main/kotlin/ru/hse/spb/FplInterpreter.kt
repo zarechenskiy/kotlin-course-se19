@@ -1,6 +1,6 @@
 package ru.hse.spb
 
-import java.lang.RuntimeException
+import java.io.PrintStream
 import java.util.*
 
 class Env<T>(private val env: MutableMap<String, T>) {
@@ -16,6 +16,7 @@ class FplEnv(val varEnv: Env<Optional<Int>>, val funEnv: Env<Fun>) {
 
     constructor() : this(Env<Optional<Int>>(mutableMapOf()), Env<Fun>(mutableMapOf()))
 
+    // A hack for returning from functions.
     var returnFlag = false
 
     fun setVar(name: String, value: Optional<Int>) = varEnv.set(name, value)
@@ -36,19 +37,23 @@ class FplParentEnv(private val envs: MutableList<FplEnv>) {
 
     fun getVar(ident: String): Optional<Int>? = getCtxWithVar(ident)?.getVar(ident)
 
-    fun getFun(ident: String): Fun? =  getCtxWithFun(ident)?.getFun(ident)
+    fun getFun(ident: String): Fun? = getCtxWithFun(ident)?.getFun(ident)
 
-    fun containsVar(ident: String): Boolean = envs.filter {it.varEnv.containsName(ident) }.count() > 0
+    fun containsVar(ident: String): Boolean = envs.filter { it.varEnv.containsName(ident) }.count() > 0
 
     fun getCtxWithVar(ident: String): FplEnv? = envs.find { it.varEnv.containsName(ident) }
     fun getCtxWithFun(ident: String): FplEnv? = envs.find { it.funEnv.containsName(ident) }
 
 }
 
-class FplInterpreter(val env: FplEnv, val parentEnvs: FplParentEnv) {
-    private val builtins = BuiltIns.functions
+class FplInterpreter(val env: FplEnv,
+                     val parentEnvs: FplParentEnv,
+                     val output: PrintStream) {
+    private val builtins = BuiltIns(output).functions
 
-    constructor() : this(FplEnv(), FplParentEnv())
+    constructor() : this(FplEnv(), FplParentEnv(), System.out)
+
+    constructor(output: PrintStream) : this(FplEnv(), FplParentEnv(), output)
 
     fun interpret(tree: FplTree): Int {
         for (stmt in tree.statements) {
@@ -63,11 +68,19 @@ class FplInterpreter(val env: FplEnv, val parentEnvs: FplParentEnv) {
     private fun interpretStatement(stmt: Statement): Int =
             when (stmt) {
                 is If -> interpretIf(stmt)
-                is While -> { interpretWhile(stmt) ; 0 }
-                is Assign -> { interpretAssign(stmt); 0 }
+                is While -> {
+                    interpretWhile(stmt); 0
+                }
+                is Assign -> {
+                    interpretAssign(stmt); 0
+                }
                 is Return -> interpretReturn(stmt)
-                is Variable -> { interpretVariable(stmt); 0 }
-                is Fun -> { interpretFun(stmt); 0 }
+                is Variable -> {
+                    interpretVariable(stmt); 0
+                }
+                is Fun -> {
+                    interpretFun(stmt); 0
+                }
                 is Expr -> interpretExpr(stmt)
             }
 
@@ -147,11 +160,11 @@ class FplInterpreter(val env: FplEnv, val parentEnvs: FplParentEnv) {
         }
 
         val newEnv = FplEnv()
-        func.parameters.zip(funCall.arguments).map {(param, expr) -> (param to interpretExpr(expr)) }
+        func.parameters.zip(funCall.arguments).map { (param, expr) -> (param to interpretExpr(expr)) }
                 .forEach { (param, value) -> newEnv.setVar(param, Optional.of(value)) }
 
         parentEnvs.push(env)
-        val innerInterp = FplInterpreter(newEnv, parentEnvs)
+        val innerInterp = FplInterpreter(newEnv, parentEnvs, output)
         val result = innerInterp.interpret(func.body)
         parentEnvs.pop()
         return result
@@ -168,7 +181,7 @@ class FplInterpreter(val env: FplEnv, val parentEnvs: FplParentEnv) {
         val cond = interpretExpr(ifClause.condition)
 
         parentEnvs.push(env)
-        val innerInterp = FplInterpreter(FplEnv(), parentEnvs)
+        val innerInterp = FplInterpreter(FplEnv(), parentEnvs, output)
 
         val result = if (cond.toBoolean()) {
             innerInterp.interpret(ifClause.thenClause)
@@ -189,7 +202,7 @@ class FplInterpreter(val env: FplEnv, val parentEnvs: FplParentEnv) {
         var cond = interpretExpr(loop.condition)
 
         parentEnvs.push(env)
-        val innerInterp = FplInterpreter(FplEnv(), parentEnvs)
+        val innerInterp = FplInterpreter(FplEnv(), parentEnvs, output)
         while (cond.toBoolean()) {
             innerInterp.interpret(loop.body)
             cond = innerInterp.interpretExpr(loop.condition)
@@ -216,20 +229,16 @@ class FplInterpreter(val env: FplEnv, val parentEnvs: FplParentEnv) {
     }
 }
 
-typealias BuiltInFunType = (IntArray) -> Int
-
-object BuiltIns {
-
-    object Functions {
-        fun println(vararg n: Int): Int {
-            println(n.joinToString { it.toString() })
-            return 0
-        }
+class BuiltIns(val output: PrintStream) {
+    private fun println(vararg n: Int): Int {
+        output.println(n.joinToString { it.toString() })
+        return 0
     }
 
-    val functions = mutableMapOf<String, BuiltInFunType>()
+    val functions = mutableMapOf<String, (IntArray) -> Int>()
 
     init {
-        functions["println"] = fun (args: IntArray): Int = Functions.println(*args)
+        functions["println"] = fun(args: IntArray): Int = this.println(*args)
     }
 }
+

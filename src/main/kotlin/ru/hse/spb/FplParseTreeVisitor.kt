@@ -40,6 +40,7 @@ class FplParseTreeVisitor : FPLBaseVisitor<Any>() {
      * - Expr in parenthesis
      */
     override fun visitExprStmt(ctx: FPLParser.ExprStmtContext): Expr = with(ctx) {
+        // This piece of code looks nasty.
         LITERAL()?.let { Literal(it.text.toInt()) } ?: IDENTIFIER()?.let { Identifier(it.text) }
         ?: funCall()?.let { fcall ->
             val args: List<Expr> = fcall.arguments.map { it.accept(this@FplParseTreeVisitor) as Expr }

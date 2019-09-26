@@ -1,13 +1,14 @@
 package ru.hse.spb
 
-fun getGreeting(): String {
-    val words = mutableListOf<String>()
-    words.add("Hello,")
-    words.add("world!")
-
-    return words.joinToString(separator = " ")
-}
+import org.antlr.v4.runtime.CharStreams
+import java.io.File
 
 fun main(args: Array<String>) {
-    println(getGreeting())
+    if (args.isEmpty()) {
+        throw RuntimeException("Need a path to a program!")
+    }
+    val path = File(args[0]).toPath()
+    val stream = CharStreams.fromPath(path)
+
+    println(FplInterpreter().interpret(FplParser.parse(stream)))
 }
