@@ -10,20 +10,21 @@ import ru.hse.spb.parser.FunCallParser
 import ru.hse.spb.parser.FunCallParser.*
 import java.io.PrintStream
 import java.io.ByteArrayOutputStream
+import java.lang.RuntimeException
 
 
 class TestSource {
     private val program= """
-            |fun min(x,y) {
-            |   if (x<y) {
-            |       return x
-            |   } else {
-            |       return y
-            |   }
-            |}
-            |var a = 2
-            |a = 7*3-13
-            |println(min(a, 4), a)
+            fun min(x, y) {
+               if (x < y) {
+                   return x
+               } else {
+                   return y
+               }
+            }
+            var a = 2
+            a = 7 * 3 - 13
+            println(min(a, 4), a)
         """.trimMargin()
 
     @Test
@@ -55,7 +56,7 @@ class TestSource {
         val assign = ast.statement(2).assign()
         assertTrue(assign is AssignContext)
         assertEquals("a", assign.IDENTIFIER().text)
-        assertEquals("7*3-13", assign.expr().text)
+        assertEquals("7 * 3 - 13", assign.expr().text)
         assertTrue(assign.getChild(4) is SumExprContext)
 
         val print = ast.statement(3).expr()
@@ -68,25 +69,26 @@ class TestSource {
         assertEquals("a", printArg2.text)
     }
 
+    // test interpreter
+    fun interpret(program: String): String {
+        val originalOut = System.out
+        val outContent = ByteArrayOutputStream()
+        System.setOut(PrintStream(outContent))
+
+        val lexer = FunCallLexer(CharStreams.fromString(program))
+        val parser = FunCallParser(BufferedTokenStream(lexer))
+        parser.file().accept(StatementsEvaluationVisitor())
+
+        System.setOut(originalOut)
+        return outContent.toString()
+    }
+
     @Test
     fun testInterpreter() {
-        fun interpret(program: String): String {
-            val originalOut = System.out
-            val outContent = ByteArrayOutputStream()
-            System.setOut(PrintStream(outContent))
-
-            val lexer = FunCallLexer(CharStreams.fromString(program))
-            val parser = FunCallParser(BufferedTokenStream(lexer))
-            parser.file().accept(StatementsEvaluationVisitor())
-
-            System.setOut(originalOut)
-            return outContent.toString()
-        }
-
         val programA = """
             var a = 10
             var b = 20
-            if (a>b) {
+            if (a > b) {
                 println(1)
             } else {
                 println(0)
@@ -95,27 +97,26 @@ class TestSource {
 
         val programB = """
             fun fib(n) {
-                if (n<=1) {
-                    return 1
-                } else {
-                    return fib(n-1)+fib(n-2)
-                }
+               if (n <= 1) {
+                   return 1
+               } else {
+                   return fib(n - 1) + fib(n - 2)
+               }
             }
             
             var i = 1
-            while (i<=5) {
-                println(i, fib(i))
-                i = i+1
+            while (i <= 5) {
+               println(i, fib(i))
+               i = i + 1
             }
         """.trimIndent()
 
 
         val programC = """
             fun foo(n) {
-            fun bar(m) {
-                return m+n
-            }
-        
+                fun bar(m) {
+                    return m + n
+                }
                 return bar(1)
             }
             
@@ -126,5 +127,66 @@ class TestSource {
         assertEquals("0\n", interpret(programA))
         assertEquals("1\n1\n2\n2\n3\n3\n4\n5\n5\n8\n", interpret(programB))
         assertEquals("42\n", interpret(programC))
+    }
+
+    @Test(expected = RuntimeException::class)
+    fun testDefButNotAssignVar() {
+        val program = """
+            var x
+            var y = x + 3
+        """.trimIndent()
+
+        interpret(program)
+    }
+
+    @Test(expected = RuntimeException::class)
+    fun testUndefVar() {
+        val program = """
+            var y = x + 3
+        """.trimIndent()
+
+        interpret(program)
+    }
+
+    @Test(expected = RuntimeException::class)
+    fun testDuplicateVarDef() {
+        val program = """
+            var x = 7
+            var x = 42
+        """.trimIndent()
+
+        interpret(program)
+    }
+
+    @Test(expected = RuntimeException::class)
+    fun testAssignToUndefVar() {
+        val program = """
+            x = 42
+        """.trimIndent()
+
+        interpret(program)
+    }
+
+    @Test(expected = RuntimeException::class)
+    fun testDuplicateFuncDef() {
+        val program = """
+            fun f(a) {
+                println(42)
+            }
+            fun f(b) {
+                return 42
+            }
+        """.trimIndent()
+
+        interpret(program)
+    }
+
+    @Test(expected = RuntimeException::class)
+    fun testCallUndefFunc() {
+        val program = """
+            println(f(42))
+        """.trimIndent()
+
+        interpret(program)
     }
 }
