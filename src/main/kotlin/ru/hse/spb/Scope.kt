@@ -14,22 +14,28 @@ class Scope<T>(private val parentScope: Scope<T>?, private var scopedType: Strin
         }
     }
 
+    private fun contains(identifier: String, context: ParserRuleContext): Boolean {
+        if (scoped.containsKey(identifier)) {
+            return true
+        }
+
+        if (parentScope == null) {
+            return false
+        }
+
+        return parentScope.contains(identifier, context)
+    }
+
     fun getScoped(identifier: String, context: ParserRuleContext): T? {
-        val local = scoped[identifier]
-
-        if (local != null) {
-            return local
+        if (!contains(identifier, context)) {
+            throw CompileException(context, "unknown $scopedType $identifier")
         }
 
-        if (parentScope != null) {
-            val outer = parentScope.getScoped(identifier, context)
-
-            if (outer != null) {
-                return outer
-            }
+        if (scoped.containsKey(identifier)) {
+            return scoped[identifier]
         }
 
-        throw CompileException(context, "unknown $scopedType")
+        return parentScope?.getScoped(identifier, context)
     }
 
     fun update(identifier: String, value: T?, context: ParserRuleContext) {
@@ -39,14 +45,14 @@ class Scope<T>(private val parentScope: Scope<T>?, private var scopedType: Strin
             if (parentScope != null) {
                 parentScope.update(identifier, value, context)
             } else {
-                throw CompileException(context, "unknown $scopedType")
+                throw CompileException(context, "unknown $scopedType $identifier")
             }
         }
     }
 
     fun insert(identifier: String, value: T?, context: ParserRuleContext) {
         if (scoped.containsKey(identifier)) {
-            throw CompileException(context, "duplicate $scopedType definition")
+            throw CompileException(context, "duplicate $scopedType $identifier definition")
         }
 
         scoped[identifier] = value

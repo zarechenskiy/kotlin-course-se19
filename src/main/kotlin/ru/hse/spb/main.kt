@@ -3,7 +3,6 @@ package ru.hse.spb
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.ParserRuleContext
-import org.antlr.v4.runtime.misc.ParseCancellationException
 
 import ru.hse.spb.parser.ExpLexer
 import ru.hse.spb.parser.ExpParser

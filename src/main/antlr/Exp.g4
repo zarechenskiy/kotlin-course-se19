@@ -118,7 +118,7 @@ IDENTIFIER
 
 LITERAL
     : '-'? [0]
-    | '-'? [1-9][1-9]*
+    | '-'? [1-9][0-9]*
     ;
 
 OPERATOR_FIRST_LEVEL
