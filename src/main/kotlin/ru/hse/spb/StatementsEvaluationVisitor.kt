@@ -21,55 +21,61 @@ class StatementsEvaluationVisitor : FunCallBaseVisitor<Any>() {
     }
 
     override fun visitBlock(ctx: BlockContext) {
-        val varEnvBefore = HashMap(varEnv)
-        val funcEnvBefore = HashMap(funcEnv)
+        wasRet = false
+        retValue = 0
         for (statement in ctx.statement()) {
             visit(statement)
             if (wasRet) break
         }
+    }
+
+    override fun visitBrBlock(ctx: BrBlockContext): Any {
+        val varEnvBefore = HashMap(varEnv)
+        val funcEnvBefore = HashMap(funcEnv)
+
+        val ret = visit(ctx.block())
 
         varEnv.filter { varEnvBefore.containsKey(it.key) }
         funcEnv.filter { funcEnvBefore.containsKey(it.key) }
+        return ret
     }
 
-    override fun visitBrBlock(ctx: BrBlockContext): Any = visit(ctx.block())
-
-    override fun visitStatement(ctx: StatementContext): Any = visit(ctx.getChild(0))
+        override fun visitStatement(ctx: StatementContext): Any = visit(ctx.getChild(0))
 
     override fun visitProdExpr(ctx: ProdExprContext): Int {
         val (left, right) = ctx.expr().map { visit(it) as Int }
         return when (ctx.op.type) {
-            MUL -> left * right
-            DIV -> left / right
-            MOD -> left % right
+            MUL  -> left * right
+            DIV  -> left / right
+            MOD  -> left % right
             else -> throw UnexpectedException("line ${ctx.start.line}: error `prod` operator")
         }
     }
 
     override fun visitSumExpr(ctx: SumExprContext): Int {
-        val (left, right) = ctx.expr().map { it -> visit(it) as Int }
+        val (left, right) = ctx.expr().map { visit(it) as Int }
         return when (ctx.op.type) {
-            PLUS -> left + right
+            PLUS  -> left + right
             MINUS -> left - right
-            else -> throw UnexpectedException("line ${ctx.start.line}: error `sum` operator")
+            else  -> throw UnexpectedException("line ${ctx.start.line}: error `sum` operator")
         }
     }
 
     override fun visitOrdExpr(ctx: OrdExprContext): Int {
-        val (left, right) = ctx.expr().map { it -> visit(it) as Int }
+        val (left, right) = ctx.expr().map { visit(it) as Int }
         return when (ctx.op.type) {
-            EQ -> (left == right).int
-            NEQ -> (left != right).int
-            GE -> (left > right).int
-            LE -> (left < right).int
-            GEQ -> (left >= right).int
-            LEQ -> (left <= right).int
+            EQ   -> (left == right).int
+            NEQ  -> (left != right).int
+            GE   -> (left > right).int
+            LE   -> (left < right).int
+            GEQ  -> (left >= right).int
+            LEQ  -> (left <= right).int
             else -> throw UnexpectedException("line ${ctx.start.line}: error `ord` operator")
         }
     }
 
     override fun visitAndExpr(ctx: AndExprContext): Boolean {
-        val (left, right) = ctx.expr().map { it -> visit(it) as Boolean }
+        val (left, right) = ctx.expr().map { visit(it) as Boolean }
         return when (ctx.op.type) {
             AND  -> left && right
             else -> throw UnexpectedException("line ${ctx.start.line}: error `and` operator")
@@ -77,7 +83,7 @@ class StatementsEvaluationVisitor : FunCallBaseVisitor<Any>() {
     }
 
     override fun visitOrExpr(ctx: OrExprContext): Boolean {
-        val (left, right) = ctx.expr().map { it -> visit(it) as Boolean }
+        val (left, right) = ctx.expr().map { visit(it) as Boolean }
         return when (ctx.op.type) {
             OR   -> left || right
             else -> throw UnexpectedException("line ${ctx.start.line}: error `or` operator")
@@ -140,8 +146,8 @@ class StatementsEvaluationVisitor : FunCallBaseVisitor<Any>() {
     }
 
     override fun visitReturnSt(ctx: ReturnStContext) {
-        wasRet = true
         retValue = visit(ctx.expr()) as Int
+        wasRet = true
     }
 
     override fun visitFunc(ctx: FuncContext) {
@@ -158,14 +164,15 @@ class StatementsEvaluationVisitor : FunCallBaseVisitor<Any>() {
 
         val args = visit(ctx.args()) as List<Int>
         val params = visit(func.params()) as List<String>
-        params.zip(args).forEach { varEnv[it.first] = it.second }
 
+        val varEnvBefore = HashMap(varEnv)
+
+        params.zip(args).forEach { varEnv[it.first] = it.second }
         visit(func.brBlock())
-        if (wasRet) {
-            wasRet = false
-            return retValue
-        }
-        return 0
+        varEnv = varEnvBefore
+
+        wasRet = false
+        return retValue
     }
 
     override fun visitParams(ctx: ParamsContext): List<String> {
