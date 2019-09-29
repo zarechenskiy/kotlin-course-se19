@@ -70,7 +70,7 @@ class TexDslTest {
                     +"three"
                 }
             }
-            enumerate() {
+            enumerate {
                 item {
                     +"four"
                 }
@@ -141,11 +141,11 @@ class TexDslTest {
             documentClass("article")
             usepackage("package")
             frame(frameTitle = "frameTitle") {
-                itemize() {
+                itemize {
                     item {
                     }
                     item {
-                        enumerate() {
+                        enumerate {
                             item {
                                 +"Hello! I am the first item here!"
                             }
@@ -202,7 +202,7 @@ class TexDslTest {
             document {
                 documentClass("class1")
                 documentClass("class2")
-                enumerate() {
+                enumerate {
                     item {
                         +"hello there!"
                     }
@@ -215,7 +215,7 @@ class TexDslTest {
     fun testMustSpecifyDocumentClass() {
         assertThrows(RuntimeException::class.java) {
             document {
-                enumerate() {
+                enumerate {
                     item {
                         +"hello there!"
                     }
