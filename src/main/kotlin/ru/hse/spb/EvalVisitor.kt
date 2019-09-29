@@ -28,222 +28,212 @@ data class ValueContext(val value: Var, val last: Boolean = false) {
     }
 }
 
+typealias Scope = MutableMap<String, Expr>
+
 class EvalVisitor : ExpBaseVisitor<ValueContext>() {
-    private val stack = Stack<MutableMap<String, Expr>>()
+    private class Context {
+        private val stack = Stack<Scope>().apply { push(HashMap()) }
 
-    private inline fun <reified T : Expr> find(id: String) = stack.findLast {
-        it[id]?.let { expr -> expr is T } ?: false
-    }?.get(id) as T?
+        inline fun <reified T : Expr> find(id: String) = stack.findLast { it[id] is T }?.get(id) as T?
 
-    override fun visitBlock(ctx: ExpParser.BlockContext): ValueContext {
-        stack.push(HashMap())
+        inline fun scope(block: Scope.() -> ValueContext): ValueContext {
+            return stack.peek().block()
+        }
 
-        var result = ValueContext.ZERO
-        ctx.statement().forEach { statement -> if (!result.last) result = visitStatement(statement) }
-
-        stack.pop()
-        return result
+        inline fun newScope(block: Scope.() -> ValueContext): ValueContext {
+            stack.push(HashMap())
+            val result = stack.peek().block()
+            stack.pop()
+            return result
+        }
     }
 
-    override fun visitFunc(ctx: ExpParser.FuncContext): ValueContext {
+    private val context = Context()
+
+    override fun visitBlock(ctx: ExpParser.BlockContext) = context.newScope {
+        var result = ValueContext.ZERO
+        ctx.statement().forEach { statement -> if (!result.last) result = visitStatement(statement) }
+        result
+    }
+
+    override fun visitFunc(ctx: ExpParser.FuncContext) = context.scope {
         val name = ctx.IDENTIFIER().text
         val params = ctx.params().IDENTIFIER().map { it.text }
 
-        with(stack.peek()) {
-            if (containsKey(name)) throw IllegalArgumentException("line ${ctx.start.line}: function with name '$name' already exists")
-            put(name, Func(params, ctx.brBlock().block()))
-        }
+        if (containsKey(name)) throw IllegalArgumentException("line ${ctx.start.line}: function with name '$name' already exists")
+        put(name, Func(params, ctx.brBlock().block()))
 
-        return ValueContext.ZERO
+        ValueContext.ZERO
     }
 
-    override fun visitVar(ctx: ExpParser.VarContext): ValueContext {
+    override fun visitVar(ctx: ExpParser.VarContext) = context.scope {
         val name = ctx.IDENTIFIER().text
         val value = visit(ctx.expr()).value
 
-        with(stack.peek()) {
-            if (containsKey(name)) throw IllegalArgumentException("line ${ctx.start.line}: var with name '$name' already exists")
-            put(name, value)
-        }
+        if (containsKey(name)) throw IllegalArgumentException("line ${ctx.start.line}: var with name '$name' already exists")
+        put(name, value)
 
-        return ValueContext.ZERO
+        ValueContext.ZERO
     }
 
-    override fun visitCall(ctx: ExpParser.CallContext): ValueContext {
+    override fun visitCall(ctx: ExpParser.CallContext) = context.scope {
         val name = ctx.IDENTIFIER().text
-        val line = ctx.IDENTIFIER().symbol.line
 
-        val result: ValueContext
-        if (isNative(name)) {
-            result = ctx.exec(name, ctx.args().expr().map { visit(it).value }.toList())
+        val result = if (isNative(name)) {
+            ctx.exec(name, ctx.args().expr().map { visit(it).value }.toList())
         } else {
-            val func = find<Func>(name) ?: throw NoSuchMethodException(name)
+            val func = context.find<Func>(name) ?: throw NoSuchMethodException(name)
 
-            if (ctx.args().expr().size != func.params.size) throw IllegalArgumentException("line $line: parameters don't much function prototype - $name")
-            stack.push(HashMap<String, Expr>().apply {
+            if (ctx.args().expr().size != func.params.size) throw IllegalArgumentException("line ${ctx.start.line}: parameters don't much function prototype - $name")
+
+            context.newScope {
                 ctx.args().expr().zip(func.params).forEach { (expr, pname) -> put(pname, visit(expr).value) }
-            })
-
-            result = visitBlock(func.block)
-            stack.pop()
+                visitBlock(func.block)
+            }
         }
 
-        return if (result.last) result.copy(last = false) else ValueContext.ZERO
+        if (result.last) result.copy(last = false) else ValueContext.ZERO
     }
 
-    override fun visitAsgn(ctx: ExpParser.AsgnContext): ValueContext {
+    override fun visitAsgn(ctx: ExpParser.AsgnContext) = context.scope {
         val name = ctx.IDENTIFIER().text
-        val variable = find<Var>(name) ?: throw NoSuchFieldException("line ${ctx.start.line}: $name")
+        val variable = context.find<Var>(name) ?: throw NoSuchFieldException("line ${ctx.start.line}: $name")
 
         val newValue = visit(ctx.expr()).value
         variable.value = newValue.value
 
-        return ValueContext.ZERO
+        ValueContext.ZERO
     }
 
-    override fun visitRet(ctx: ExpParser.RetContext): ValueContext {
-        return visit(ctx.expr()).value.createContext(last = true)
-    }
+    override fun visitRet(ctx: ExpParser.RetContext) = visit(ctx.expr()).value.createContext(last = true)
 
-    override fun visitCond(ctx: ExpParser.CondContext): ValueContext {
+    override fun visitCond(ctx: ExpParser.CondContext) = context.scope {
         val cond = visit(ctx.expr()).value
-        val line = ctx.start.line
 
-        if (!cond.isBoolean()) throw UnsupportedOperationException("line $line: using conditional operator with non boolean type")
+        if (!cond.isBoolean()) throw UnsupportedOperationException("line ${ctx.start.line}: using conditional operator with non boolean type")
+
+        when {
+            cond.asBoolean() -> visitBlock(ctx.brBlock().first().block())
+            ctx.brBlock().size > 1 -> visitBlock(ctx.brBlock().last().block())
+            else -> ValueContext.ZERO
+        }
+    }
+
+    override fun visitWhl(ctx: ExpParser.WhlContext) = context.scope {
+        var cond = visit(ctx.expr()).value
+
+        if (!cond.isBoolean()) throw UnsupportedOperationException("line ${ctx.start.line}: using 'while' operator with non boolean type")
 
         var result = ValueContext.ZERO
-        if (cond.asBoolean()) {
-            result = visitBlock(ctx.brBlock().first().block())
-        } else if (ctx.brBlock().size > 1) {
-            result = visitBlock(ctx.brBlock().last().block())
-        }
-
-        return result
-    }
-
-    override fun visitWhl(ctx: ExpParser.WhlContext): ValueContext {
-        var cond = visit(ctx.expr()).value
-        val line = ctx.start.line
-
-        if (!cond.isBoolean()) throw UnsupportedOperationException("line $line: using 'while' operator with non boolean type")
-
         while (cond.asBoolean()) {
-            val result = visitBrBlock(ctx.brBlock())
+            result = visitBrBlock(ctx.brBlock())
 
-            if (result.last) return result
+            if (result.last) break
 
             cond = visit(ctx.expr()).value
-            if (!cond.isBoolean()) throw UnsupportedOperationException("line $line: using 'while' operator with non boolean type")
+            if (!cond.isBoolean()) throw UnsupportedOperationException("line ${ctx.start.line}: using 'while' operator with non boolean type")
         }
 
-        return ValueContext.ZERO
+        result
     }
 
-    override fun visitUnaryExpr(ctx: ExpParser.UnaryExprContext): ValueContext {
+    override fun visitUnaryExpr(ctx: ExpParser.UnaryExprContext) = context.scope {
         val result = visit(ctx.expr()).value
-        val line = ctx.start.line
 
-        if (result.isInt()) return Var(-result.asInt()).createContext()
-        else throw UnsupportedOperationException("line $line: unary minus with boolean type")
+        if (result.isInt()) Var(-result.asInt()).createContext()
+        else throw UnsupportedOperationException("line ${ctx.start.line}: unary minus with boolean type")
     }
 
-    override fun visitMultExpr(ctx: ExpParser.MultExprContext): ValueContext {
+    override fun visitMultExpr(ctx: ExpParser.MultExprContext) = context.scope {
         val (left, right) = ctx.expr()
         val leftResult = visit(left).value
         val rightResult = visit(right).value
-        val line = ctx.start.line
 
         if (leftResult.isInt() && rightResult.isInt()) {
-            return Var(when (ctx.op.type) {
+            Var(when (ctx.op.type) {
                 ExpParser.MULT -> leftResult.asInt() * rightResult.asInt()
                 ExpParser.DIV -> leftResult.asInt() / rightResult.asInt()
                 ExpParser.MOD -> leftResult.asInt() % rightResult.asInt()
-                else -> throw UnexpectedException("line $line: non multiplicative operator in the multiplicative block")
+                else -> throw UnexpectedException("line ${ctx.start.line}: non multiplicative operator in the multiplicative block")
             }).createContext()
-        } else throw UnsupportedOperationException("line $line: using multiplicative operator with boolean type")
+        } else throw UnsupportedOperationException("line ${ctx.start.line}: using multiplicative operator with boolean type")
     }
 
-    override fun visitAddExpr(ctx: ExpParser.AddExprContext): ValueContext {
+    override fun visitAddExpr(ctx: ExpParser.AddExprContext) = context.scope {
         val (left, right) = ctx.expr()
         val leftResult = visit(left).value
         val rightResult = visit(right).value
-        val line = ctx.start.line
 
         if (leftResult.isInt() && rightResult.isInt()) {
-            return Var(when (ctx.op.type) {
+            Var(when (ctx.op.type) {
                 ExpParser.PLUS -> leftResult.asInt() + rightResult.asInt()
                 ExpParser.MINUS -> leftResult.asInt() - rightResult.asInt()
-                else -> throw UnexpectedException("line $line: non additive operator in the additive block")
+                else -> throw UnexpectedException("line ${ctx.start.line}: non additive operator in the additive block")
             }).createContext()
-        } else throw UnsupportedOperationException("line $line: using additive operator with boolean type")
+        } else throw UnsupportedOperationException("line ${ctx.start.line}: using additive operator with boolean type")
     }
 
-    override fun visitRelExpr(ctx: ExpParser.RelExprContext): ValueContext {
+    override fun visitRelExpr(ctx: ExpParser.RelExprContext) = context.scope {
         val (left, right) = ctx.expr()
         val leftResult = visit(left).value
         val rightResult = visit(right).value
-        val line = ctx.start.line
 
         if (leftResult.isInt() && rightResult.isInt()) {
-            return Var(when (ctx.op.type) {
+            Var(when (ctx.op.type) {
                 ExpParser.LTEQ -> leftResult.asInt() <= rightResult.asInt()
                 ExpParser.GTEQ -> leftResult.asInt() >= rightResult.asInt()
                 ExpParser.LT -> leftResult.asInt() < rightResult.asInt()
                 ExpParser.GT -> leftResult.asInt() > rightResult.asInt()
-                else -> throw UnexpectedException("line $line: non relational operator in the relational block")
+                else -> throw UnexpectedException("line ${ctx.start.line}: non relational operator in the relational block")
             }).createContext()
-        } else throw UnsupportedOperationException("line $line: using relational operator with boolean type")
+        } else throw UnsupportedOperationException("line ${ctx.start.line}: using relational operator with boolean type")
     }
 
-    override fun visitEqExpr(ctx: ExpParser.EqExprContext): ValueContext {
+    override fun visitEqExpr(ctx: ExpParser.EqExprContext) = context.scope {
         val (left, right) = ctx.expr()
         val leftResult = visit(left).value
         val rightResult = visit(right).value
-        val line = ctx.start.line
 
-        return Var(when (ctx.op.type) {
+        Var(when (ctx.op.type) {
             ExpParser.EQ -> leftResult == rightResult
             ExpParser.NEQ -> leftResult != rightResult
-            else -> throw UnexpectedException("line $line: non equality operator in the equality block")
+            else -> throw UnexpectedException("line ${ctx.start.line}: non equality operator in the equality block")
         }).createContext()
     }
 
-    override fun visitAndExpr(ctx: ExpParser.AndExprContext): ValueContext {
+    override fun visitAndExpr(ctx: ExpParser.AndExprContext) = context.scope {
         val (left, right) = ctx.expr()
         val leftResult = visit(left).value
         val rightResult = visit(right).value
-        val line = ctx.start.line
 
-        if (leftResult.isBoolean() && rightResult.isBoolean()) {
-            return Var(leftResult.asBoolean() && rightResult.asBoolean()).createContext()
-        } else throw UnsupportedOperationException("line $line: using 'and' operator with non boolean type")
+        if (leftResult.isBoolean() && rightResult.isBoolean()) Var(leftResult.asBoolean() && rightResult.asBoolean()).createContext()
+        else throw UnsupportedOperationException("line ${ctx.start.line}: using 'and' operator with non boolean type")
     }
 
-    override fun visitOrExpr(ctx: ExpParser.OrExprContext): ValueContext {
+    override fun visitOrExpr(ctx: ExpParser.OrExprContext) = context.scope {
         val (left, right) = ctx.expr()
         val leftResult = visit(left).value
         val rightResult = visit(right).value
-        val line = ctx.start.line
 
-        if (leftResult.isBoolean() && rightResult.isBoolean()) {
-            return Var(leftResult.asBoolean() || rightResult.asBoolean()).createContext()
-        } else throw UnsupportedOperationException("line $line: using 'or' operator with non boolean type")
+        if (leftResult.isBoolean() && rightResult.isBoolean()) Var(leftResult.asBoolean() || rightResult.asBoolean()).createContext()
+        else throw UnsupportedOperationException("line ${ctx.start.line}: using 'or' operator with non boolean type")
     }
 
-    override fun visitIdExpr(ctx: ExpParser.IdExprContext): ValueContext {
+    override fun visitIdExpr(ctx: ExpParser.IdExprContext) = context.scope {
         val name = ctx.IDENTIFIER().text
-        val value = find<Var>(name) ?: throw NoSuchFieldException("line ${ctx.start.line}: $name")
-
-        return value.createContext()
+        val value = context.find<Var>(name) ?: throw NoSuchFieldException("line ${ctx.start.line}: $name")
+        value.createContext()
     }
 
     override fun visitBoolExpr(ctx: ExpParser.BoolExprContext) = Var(ctx.text!!.toBoolean()).createContext()
 
     override fun visitLitExpr(ctx: ExpParser.LitExprContext) = Var(ctx.text!!.toInt()).createContext()
 
-    override fun visitParExpr(ctx: ExpParser.ParExprContext): ValueContext = visit(ctx.expr())
+    override fun visitParExpr(ctx: ExpParser.ParExprContext) = context.scope { visit(ctx.expr()) }
 
-    override fun shouldVisitNextChild(node: RuleNode, currentResult: ValueContext?) = currentResult?.let { !it.last } ?: true
+    override fun shouldVisitNextChild(node: RuleNode, currentResult: ValueContext?) = currentResult?.let { !it.last }
+            ?: true
+
     override fun defaultResult() = ValueContext.ZERO
 
     private fun isNative(name: String) = name == "println"
