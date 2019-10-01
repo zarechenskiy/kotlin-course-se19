@@ -50,28 +50,25 @@ open class Statements : Elements() {
         elements.add(TextStatement(this))
     }
 
-    fun itemTag(tag: String) = ItemTagInitializer(tag, this::addReadyElement)
-    fun itemTag(tag: String, init: Items.() -> Unit) = ItemTagInitializer(tag, this::addReadyElement).also {
-        it.invoke(init)
-    }
+    fun itemTag(tag: String) = CommandInitializer(addReadyElement(BeginCommand(tag, Items())))
+    fun itemTag(tag: String, init: Items.() -> Unit) = itemTag(tag).invoke(init)
 
     val enumerate
         get() = itemTag("enumerate")
     val itemize
         get() = itemTag("itemize")
 
-    fun paragraph() = +""
+    fun emptyLn() = +""
 
-    fun customTag(tag: String) = StatementsTagInitializer(tag, this::addReadyElement)
-    fun customTag(tag: String, init: Statements.() -> Unit) = StatementsTagInitializer(tag, this::addReadyElement).also {
-        it.invoke(init)
-    }
+    fun customTag(tag: String) =
+        CommandInitializer(addReadyElement(BeginCommand(tag, Statements())))
+    fun customTag(tag: String, init: Statements.() -> Unit) =
+        customTag(tag).invoke(init)
 
-    fun customManualNewlineTag(tag: String) = ManualNewlineStatementsTagInitializer(tag, this::addReadyElement)
+    fun customManualNewlineTag(tag: String) =
+        CommandInitializer(addReadyElement(BeginCommand(tag, ManualNewlineStatements())))
     fun customManualNewlineTag(tag: String, init: ManualNewlineStatements.() -> Unit) =
-        ManualNewlineStatementsTagInitializer(tag, this::addReadyElement).also {
-        it.invoke(init)
-    }
+        customManualNewlineTag(tag).invoke(init)
 
     val math
         get() = customTag("math")

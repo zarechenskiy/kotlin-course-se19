@@ -1,6 +1,7 @@
 package ru.hse.spb.tex
 
-import ru.hse.spb.tex.util.CommandWithoutBodyGenerator
+import ru.hse.spb.tex.util.Command
+import ru.hse.spb.tex.util.CommandInitializer
 import ru.hse.spb.tex.util.parametersOrNothing
 import java.io.OutputStream
 import java.io.OutputStreamWriter
@@ -17,9 +18,9 @@ class Document: Statements() {
         documentClassArguments = parameters
     }
 
-    fun initCommand(command: String) = prelude.command(command)
+    fun initCommand(commandText: String) = prelude.command(commandText)
 
-    val usepackage = CommandWithoutBodyGenerator("usepackage", prelude::addReadyElement)
+    val usepackage get() = CommandInitializer(prelude.addReadyElement(Command("usepackage")))
 
     fun toWriter(output: Writer) {
         render(output, "")

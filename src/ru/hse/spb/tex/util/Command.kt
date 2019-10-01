@@ -41,14 +41,7 @@ open class Command(text: String) : CommandWithBody<Command.EmptyElement>(text, E
     }
 }
 
-open class CommandInitializer<Y : Element, T : CommandWithBody<Y>>(
-    commandConsumer: (T) -> Any,
-    producer: () -> T
-) {
-    val command = producer()
-    init {
-        commandConsumer(command)
-    }
+open class CommandInitializer<Y : Element, T : CommandWithBody<Y>>(val command: T) {
 
     operator fun get(vararg params: String): ParameterCollector = ParameterCollector(squareParams = params)
     operator fun get(param: Pair<String, String>, vararg params: Pair<String, String>): ParameterCollector =
@@ -89,10 +82,9 @@ open class CommandInitializer<Y : Element, T : CommandWithBody<Y>>(
 }
 
 open class CommandWithoutBodyGenerator(
-    private val commandName: String,
+    commandName: String,
     commandConsumer: (Command) -> Any
 )
-    : CommandGenerator<Command.EmptyElement, Command>(
-    commandConsumer,
-    { Command(commandName) }
+    : CommandInitializer<Command.EmptyElement, Command>(
+    Command(commandName).also { commandConsumer(it) }
 )

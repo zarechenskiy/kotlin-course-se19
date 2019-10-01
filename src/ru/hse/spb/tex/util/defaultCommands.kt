@@ -7,14 +7,6 @@ import ru.hse.spb.tex.Statements
 import java.io.Writer
 
 
-open class Tag(private val name: String) : Statements() {
-    override fun render(output: Writer, indent: String) {
-        output.appendln("$indent\\begin{$name}")
-        super.render(output, indent + "\t")
-        output.appendln("$indent\\end{$name}")
-    }
-}
-
 open class BeginCommand<E : Element>(val tag: String, body: E) : CommandWithBody<E>("begin", body) {
     init {
         addFigureArguments(tag)
@@ -32,28 +24,11 @@ open class BeginInitializer<E : Element>(
     commandConsumer: (BeginCommand<E>) -> Any,
     bodyProducer: () -> E
 ) : CommandInitializer<E, BeginCommand<E>>(
-    commandConsumer,
-    { BeginCommand(tag, bodyProducer())}
+    BeginCommand(tag, bodyProducer()).also { commandConsumer(it)}
 )
 
 
 class Item : CommandWithBody<Statements>("item", Statements())
-class ItemInitializer(consumer: (Element) -> Unit) : CommandInitializer<Statements, Item>(consumer, { Item() })
 class Items : Elements() {
-    val item get() = ItemInitializer { addReadyElement(it) }
+    val item get() = CommandInitializer(addReadyElement(Item()))
 }
-
-open class ItemTagInitializer(
-    tag: String,
-    commandConsumer: (BeginCommand<Items>) -> Any
-) : BeginInitializer<Items>(tag, commandConsumer, { Items() })
-
-open class StatementsTagInitializer(
-    tag: String,
-    commandConsumer: (BeginCommand<Statements>) -> Any
-) : BeginInitializer<Statements>(tag, commandConsumer, { Statements() })
-
-open class ManualNewlineStatementsTagInitializer(
-    tag: String,
-    commandConsumer: (BeginCommand<ManualNewlineStatements>) -> Any
-) : BeginInitializer<ManualNewlineStatements>(tag, commandConsumer, { ManualNewlineStatements() })
