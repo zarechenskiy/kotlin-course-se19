@@ -45,20 +45,17 @@ open class CommandGenerator<Y : Element, T : CommandWithBody<Y>>(
     protected val commandConsumer: (T) -> Any,
     val producer: () -> T
 ) {
-    operator fun get(vararg params: String): ParameterCollector {
-        return ParameterCollector(squareParams = params)
-    }
-    operator fun get(param: Pair<String, String>, vararg params: Pair<String, String>): ParameterCollector {
-        return get(pairsToParameter(param, *params))
-    }
+    operator fun get(vararg params: String): ParameterCollector = ParameterCollector(squareParams = params)
+    operator fun get(param: Pair<String, String>, vararg params: Pair<String, String>): ParameterCollector =
+        get(pairsToParameter(param, *params))
 
-    operator fun invoke(commandInit: Y.() -> Unit) {
-        get()(commandInit)
-    }
+    operator fun invoke(commandInit: Y.() -> Unit) = get()(commandInit)
 
-    operator fun invoke(vararg figureParams: String): ParameterCollector {
-        return ParameterCollector(figureParams = figureParams)
-    }
+    operator fun invoke(vararg figureParams: String): ParameterCollector =
+        ParameterCollector(figureParams = figureParams)
+
+    operator fun invoke(vararg figureParams: String, commandInit: Y.() -> Unit) =
+        invoke(*figureParams).invoke(commandInit)
 
     inner class ParameterCollector(
         squareParams: Array<out String> = emptyArray(), figureParams: Array<out String>? = null
@@ -79,6 +76,11 @@ open class CommandGenerator<Y : Element, T : CommandWithBody<Y>>(
 
         operator fun invoke(commandInit: Y.() -> Unit) {
             command.initBody(commandInit)
+        }
+
+        operator fun invoke(vararg figureParams: String, commandInit: Y.() -> Unit) {
+            invoke(*figureParams)
+            invoke(commandInit)
         }
     }
 }

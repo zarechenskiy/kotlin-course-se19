@@ -41,7 +41,7 @@ fun main() {
         customTag("qwe")("wqe")
 
         customTag("frame") {
-            customTag("tabular")("|c | c | c | c |", "as").invoke {
+            customTag("tabular")("|c | c | c | c |") {
                 command("hline")
                 +"\\texttt { eps / param } & 1             & 2       & 0.5         \\\\"
                 command("hline")
