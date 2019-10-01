@@ -1,14 +1,19 @@
 package ru.hse.spb.tex
 
+import java.io.OutputStream
+import java.io.OutputStreamWriter
+import java.io.Writer
+import java.io.StringWriter
+
 interface Element {
-    fun render(builder: StringBuilder, indent: String)
+    fun render(output: Writer, indent: String)
 }
 
 abstract class Statement : Element
 
 class TextStatement(private val text: String) : Statement() {
-    override fun render(builder: StringBuilder, indent: String) {
-        builder.append(indent + text + "\n")
+    override fun render(output: Writer, indent: String) {
+        output.appendln(indent + text)
     }
 }
 
@@ -25,9 +30,9 @@ open class Elements : Element {
         return element
     }
 
-    override fun render(builder: StringBuilder, indent: String) {
+    override fun render(output: Writer, indent: String) {
         for (statement in elements) {
-            statement.render(builder, indent)
+            statement.render(output, indent)
         }
     }
 }
@@ -54,10 +59,10 @@ open class Statements : Elements() {
 }
 
 open class Tag(private val name: String) : Statements() {
-    override fun render(builder: StringBuilder, indent: String) {
-        builder.append("$indent\\begin{$name}\n")
-        super.render(builder, indent + "\t")
-        builder.append("$indent\\end{$name}\n")
+    override fun render(output: Writer, indent: String) {
+        output.appendln("$indent\\begin{$name}")
+        super.render(output, indent + "\t")
+        output.appendln("$indent\\end{$name}")
     }
 }
 
@@ -66,16 +71,16 @@ open class ItemTag(private val name: String) : Elements() {
     fun item(init: Statements.() -> Unit) = addElement(Item(), init)
     fun item(parameter: String, init: Statements.() -> Unit) = addElement(Item(parameter), init)
 
-    override fun render(builder: StringBuilder, indent: String) {
-        builder.append("$indent\\begin{$name}\n")
-        super.render(builder, indent + "\t")
-        builder.append("$indent\\end{$name}\n")
+    override fun render(output: Writer, indent: String) {
+        output.appendln("$indent\\begin{$name}")
+        super.render(output, indent + "\t")
+        output.appendln("$indent\\end{$name}")
     }
 
     class Item(private val parameter: String? = null) : Statements() {
-        override fun render(builder: StringBuilder, indent: String) {
-            builder.append("$indent\\item${parametersOrNothing(parameter)}\n")
-            super.render(builder, indent)
+        override fun render(output: Writer, indent: String) {
+            output.appendln("$indent\\item${parametersOrNothing(parameter)}")
+            super.render(output, indent)
         }
     }
 }
@@ -111,17 +116,29 @@ class Document: Statements() {
         initCommand("usepackage${parametersOrNothing(*params)}{$name}")
     }
 
-    fun toStringBuilder(builder: StringBuilder) {
-        render(builder, "")
+    fun toWriter(output: Writer) {
+        render(output, "")
     }
 
-    override fun render(builder: StringBuilder, indent: String) {
-        builder.append("$indent\\documentclass${parametersOrNothing(documentClassArguments)}{$documentClass}")
-        builder.append("\n")
-        prelude.render(builder, indent)
-        builder.append("$indent\\begin{document}")
-        super.render(builder, indent)
-        builder.append("$indent\\end{document}")
+    fun toOutputStream(output: OutputStream) {
+        OutputStreamWriter(output).use { toWriter(it) }
+    }
+
+    override fun toString(): String {
+        return StringWriter().also {
+            toWriter(it)
+        }.toString()
+    }
+
+    override fun render(output: Writer, indent: String) {
+        output.apply {
+            append("$indent\\documentclass${parametersOrNothing(documentClassArguments)}{$documentClass}")
+            appendln("")
+            prelude.render(output, indent)
+            appendln("$indent\\begin{document}")
+            super.render(output, indent)
+            appendln("$indent\\end{document}")
+        }
     }
 }
 

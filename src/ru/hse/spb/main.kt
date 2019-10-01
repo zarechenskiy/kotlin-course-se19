@@ -3,8 +3,7 @@ package ru.hse.spb
 import ru.hse.spb.tex.document
 
 fun main() {
-    val builder = StringBuilder()
-    document {
+    val doc = document {
         documentClass("beamer")
 
         usepackage("cmap")
@@ -33,6 +32,6 @@ fun main() {
                 item { +"3" }
             }
         }
-    }.toStringBuilder(builder)
-    print(builder)
+    }
+    print(doc)
 }
