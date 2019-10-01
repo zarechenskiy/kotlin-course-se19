@@ -19,12 +19,12 @@ fun main() {
         
         customTag("frame") {
             enumerate {
-                item("33") {
+                item["33"] {
                     itemize {
                         item { +"1" }
                         item { +"2" }
-                        item("ad") { +"12" }
-                        item("kek3") { +"kek" }
+                        item["ad"] { +"12" }
+                        item["kek3"] { +"kek" }
                         item { +"dva" }
                     }
                 }

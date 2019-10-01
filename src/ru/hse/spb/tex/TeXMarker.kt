@@ -1,5 +1,8 @@
 package ru.hse.spb.tex
 
+import ru.hse.spb.tex.util.ItemGenerator
+import ru.hse.spb.tex.util.pairsToParameter
+import ru.hse.spb.tex.util.parametersOrNothing
 import java.io.OutputStream
 import java.io.OutputStreamWriter
 import java.io.Writer
@@ -21,10 +24,26 @@ class TextStatement(private val text: String) : Statement() {
 annotation class TeXMarker
 
 @TeXMarker
+class TextArguments : Element {
+    private val arguments = arrayListOf<String>()
+
+    operator fun String.unaryPlus() {
+        arguments.add(this)
+    }
+
+    override fun render(output: Writer, indent: String) {
+        if (arguments.isNotEmpty()) {
+            output.appendln("{${arguments.joinToString(", ")}}")
+        }
+    }
+
+}
+
+@TeXMarker
 open class Elements : Element {
     protected val elements = arrayListOf<Element>()
 
-    protected fun <T : Element> addElement(element: T, init: T.() -> Unit): T {
+    fun <T : Element> addElement(element: T, init: T.() -> Unit = {}): T {
         element.init()
         elements.add(element)
         return element
@@ -45,8 +64,8 @@ open class Statements : Elements() {
 
     fun paragraph() = +""
 
-    fun enumerate(init: Enumerate.() -> Unit) = addElement(Enumerate(), init)
-    fun itemize(init: Itemize.() -> Unit) = addElement(Itemize(), init)
+    fun enumerate(init: ItemTag.() -> Unit) = itemTag("enumerate", init)
+    fun itemize(init: ItemTag.() -> Unit) = itemTag("itemize", init)
     fun itemTag(tag: String, init: ItemTag.() -> Unit) = addElement(ItemTag(tag), init)
 
     fun customTag(tag: String, init: Tag.() -> Unit) = addElement(Tag(tag), init)
@@ -67,9 +86,9 @@ open class Tag(private val name: String) : Statements() {
 }
 
 open class ItemTag(private val name: String) : Elements() {
-
-    fun item(init: Statements.() -> Unit) = addElement(Item(), init)
-    fun item(parameter: String, init: Statements.() -> Unit) = addElement(Item(parameter), init)
+    val item = ItemGenerator(this)
+//    fun item(init: Statements.() -> Unit) = addElement(Item(), init)
+//    fun item(parameter: String, init: Statements.() -> Unit) = addElement(Item(parameter), init)
 
     override fun render(output: Writer, indent: String) {
         output.appendln("$indent\\begin{$name}")
@@ -77,25 +96,13 @@ open class ItemTag(private val name: String) : Elements() {
         output.appendln("$indent\\end{$name}")
     }
 
-    class Item(private val parameter: String? = null) : Statements() {
-        override fun render(output: Writer, indent: String) {
-            output.appendln("$indent\\item${parametersOrNothing(parameter)}")
-            super.render(output, indent)
-        }
-    }
+//    class Item(private val parameter: String? = null) : Statements() {
+//        override fun render(output: Writer, indent: String) {
+//            output.appendln("$indent\\item${parametersOrNothing(parameter)}")
+//            super.render(output, indent)
+//        }
+//    }
 }
-
-class Enumerate : ItemTag("enumerate")
-class Itemize : ItemTag("itemize")
-
-fun parametersOrNothing(vararg parameter: String?): String {
-    return "[${parameter.filter { it != null && it != "" }.joinToString(", ")}]".takeIf { it.length > 2 } ?: ""
-}
-
-fun pairsToParameter(vararg params: Pair<String, String>): String {
-    return parametersOrNothing(params.joinToString(", ") { "${it.first} = ${it.second}" })
-}
-
 
 class Document: Statements() {
     private var documentClass = "article"
