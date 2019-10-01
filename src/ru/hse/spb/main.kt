@@ -38,22 +38,22 @@ fun main() {
                 item { +"3" }
             }
         }
-        customTag("qwe")("wqe")
+
 
         customTag("frame") {
-            customTag("tabular")("|c | c | c | c |") {
+            customManualNewlineTag("tabular")("|c | c | c | c |") {
                 command("hline")
-                +"\\texttt { eps / param } & 1             & 2       & 0.5         \\\\"
+                +"\\texttt { eps / param } & 1             & 2       & 0.5         "
                 command("hline")
-                +"0.1                  & 10            & 4       & 100         \\\\"
+                +"0.1                  & 10            & 4       & 100         "
                 command("hline")
-                +"0.001                & 1000          & 32      & 1000000     \\\\"
+                +"0.001                & 1000          & 32      & 1000000     "
                 command("hline")
-                +"1e-05                & 100000        & 317     & 10000000000 \\\\"
+                +"1e-05                & 100000        & 317     & 10000000000 "
                 command("hline")
-                +"1e-07                & 10000000      & 3163    & $10^{ 14 }$   \\\\"
+                +"1e-07                & 10000000      & 3163    & $10^{ 14 }$   "
                 command("hline")
-                +"1e-12                & 1000000000000 & 1000000 & $10^{ 24 }$   \\\\"
+                +"1e-12                & 1000000000000 & 1000000 & $10^{ 24 }$   "
                 command("hline")
             }
         }

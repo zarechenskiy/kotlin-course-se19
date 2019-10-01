@@ -42,28 +42,42 @@ open class Elements : Element {
     }
 }
 
+// It's because of this::addReadyElement and it only only accesses this@Elements.elements and doesn't call any methods
+@Suppress("LeakingThis")
 open class Statements : Elements() {
 
-    operator fun String.unaryPlus() {
+    open operator fun String.unaryPlus() {
         elements.add(TextStatement(this))
     }
 
-    fun paragraph() = +""
-
-    // addReadyElement only accesses this@Elements.elements and doesn't call any methods
-    @Suppress("LeakingThis")
-    val enumerate = ItemTagGenerator("enumerate", this::addReadyElement)
-    @Suppress("LeakingThis")
-    val itemize = ItemTagGenerator("itemize", this::addReadyElement)
     fun itemTag(tag: String) = ItemTagGenerator(tag, this::addReadyElement)
     fun itemTag(tag: String, init: Items.() -> Unit) = ItemTagGenerator(tag, this::addReadyElement).also {
         it.invoke(init)
     }
+
+    val enumerate = itemTag("enumerate")
+    val itemize = itemTag("itemize")
+
+    fun paragraph() = +""
 
     fun customTag(tag: String) = StatementsTagGenerator(tag, this::addReadyElement)
     fun customTag(tag: String, init: Statements.() -> Unit) = StatementsTagGenerator(tag, this::addReadyElement).also {
         it.invoke(init)
     }
 
+    fun customManualNewlineTag(tag: String) = ManualNewlineStatementsTagGenerator(tag, this::addReadyElement)
+    fun customManualNewlineTag(tag: String, init: ManualNewlineStatements.() -> Unit) =
+        ManualNewlineStatementsTagGenerator(tag, this::addReadyElement).also {
+        it.invoke(init)
+    }
+
+    val math = customTag("math")
+
     fun command(name: String) = CommandWithoutBodyGenerator(name, this::addReadyElement)
+}
+
+open class ManualNewlineStatements : Statements() {
+    override operator fun String.unaryPlus() {
+        elements.add(TextStatement(this + "\\\\"))
+    }
 }
