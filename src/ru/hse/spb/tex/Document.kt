@@ -3,10 +3,7 @@ package ru.hse.spb.tex
 import ru.hse.spb.tex.util.Command
 import ru.hse.spb.tex.util.CommandInitializer
 import ru.hse.spb.tex.util.parametersOrNothing
-import java.io.OutputStream
-import java.io.OutputStreamWriter
 import java.io.Writer
-import java.io.StringWriter
 
 class Document: Statements() {
     private var documentClass = "article"
@@ -19,22 +16,10 @@ class Document: Statements() {
     }
 
     fun initCommand(commandText: String) = prelude.command(commandText)
+    fun def(newComand: String) = initCommand("def\\$newComand")
+    fun withPrelude(initCommands: Statements.() -> Unit) = prelude.initCommands()
 
     val usepackage get() = CommandInitializer(prelude.addReadyElement(Command("usepackage")))
-
-    fun toWriter(output: Writer) {
-        render(output, "")
-    }
-
-    fun toOutputStream(output: OutputStream) {
-        OutputStreamWriter(output).use { toWriter(it) }
-    }
-
-    override fun toString(): String {
-        return StringWriter().also {
-            toWriter(it)
-        }.toString()
-    }
 
     override fun render(output: Writer, indent: String) {
         output.apply {

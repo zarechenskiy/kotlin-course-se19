@@ -2,7 +2,6 @@ package ru.hse.spb
 
 import ru.hse.spb.tex.document
 
-// TODO fix not printing [""]
 
 fun main() {
     val doc = document {
@@ -12,6 +11,8 @@ fun main() {
         usepackage["T2A"]("fontenc")
         usepackage["russian"]("babel")
         usepackage["utf8"]("inputenc")
+        initCommand("textwidth=160mm")
+        def("INF")("\\infty")
         usepackage("amsmat", "amssymb")
         usepackage("enumerate")
 
@@ -59,5 +60,5 @@ fun main() {
             }
         }
     }
-    print(doc)
+    print(doc.stringRepresentation)
 }
