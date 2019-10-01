@@ -1,6 +1,7 @@
 package ru.hse.spb.tex
 
 import ru.hse.spb.tex.util.Command
+import ru.hse.spb.tex.util.CommandWithoutBodyGenerator
 import ru.hse.spb.tex.util.ItemGenerator
 import ru.hse.spb.tex.util.pairsToParameter
 import java.io.Writer
@@ -20,22 +21,6 @@ class TextStatement(private val text: String) : Statement() {
 
 @DslMarker
 annotation class TeXMarker
-
-@TeXMarker
-class TextArguments : Element {
-    private val arguments = arrayListOf<String>()
-
-    operator fun String.unaryPlus() {
-        arguments.add(this)
-    }
-
-    override fun render(output: Writer, indent: String) {
-        if (arguments.isNotEmpty()) {
-            output.appendln("{${arguments.joinToString(", ")}}")
-        }
-    }
-
-}
 
 @TeXMarker
 open class Elements : Element {
@@ -78,7 +63,7 @@ open class Statements : Elements() {
     fun customTag(tag: String, parameter: Pair<String, String>, init: Tag.() -> Unit) =
         addElement(Tag(tag + pairsToParameter(parameter)), init)
 
-    fun command(name: String) = addElement(Command(name))
+    fun command(name: String) = CommandWithoutBodyGenerator(name, this::addReadyElement)
 }
 
 open class Tag(private val name: String) : Statements() {

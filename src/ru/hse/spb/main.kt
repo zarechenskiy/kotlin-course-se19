@@ -6,15 +6,16 @@ fun main() {
     val doc = document {
         documentClass("beamer")
 
-        usepackage{+"cmap"}
-        usepackage["T2A"]{+"fontenc"}
-        usepackage["russian"]{+"babel"}
-        usepackage["utf8"]{+"inputenc"}
-        usepackage{+"amsmat, amssymb"}
-        usepackage{+"enumerate"}
+        usepackage("cmap")
+        usepackage["T2A"]("fontenc")
+        usepackage["russian"]("babel")
+        usepackage["utf8"]("inputenc")
+        usepackage("amsmat", "amssymb")
+        usepackage("enumerate")
 
         customTag("frame") {
             +"123123"
+            command("color")("blue")
         }
         
         customTag("frame") {
@@ -24,7 +25,10 @@ fun main() {
                         item { +"1" }
                         item { +"2" }
                         item["ad"] { +"12" }
-                        item["kek3"] { +"kek" }
+                        item["kek3"] {
+                            +"kek"
+                            +"kek"
+                        }
                         item { +"dva" }
                     }
                 }
