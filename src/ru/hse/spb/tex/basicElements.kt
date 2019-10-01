@@ -50,8 +50,8 @@ open class Statements : Elements() {
         elements.add(TextStatement(this))
     }
 
-    fun itemTag(tag: String) = ItemTagGenerator(tag, this::addReadyElement)
-    fun itemTag(tag: String, init: Items.() -> Unit) = ItemTagGenerator(tag, this::addReadyElement).also {
+    fun itemTag(tag: String) = ItemTagInitializer(tag, this::addReadyElement)
+    fun itemTag(tag: String, init: Items.() -> Unit) = ItemTagInitializer(tag, this::addReadyElement).also {
         it.invoke(init)
     }
 
@@ -62,14 +62,14 @@ open class Statements : Elements() {
 
     fun paragraph() = +""
 
-    fun customTag(tag: String) = StatementsTagGenerator(tag, this::addReadyElement)
-    fun customTag(tag: String, init: Statements.() -> Unit) = StatementsTagGenerator(tag, this::addReadyElement).also {
+    fun customTag(tag: String) = StatementsTagInitializer(tag, this::addReadyElement)
+    fun customTag(tag: String, init: Statements.() -> Unit) = StatementsTagInitializer(tag, this::addReadyElement).also {
         it.invoke(init)
     }
 
-    fun customManualNewlineTag(tag: String) = ManualNewlineStatementsTagGenerator(tag, this::addReadyElement)
+    fun customManualNewlineTag(tag: String) = ManualNewlineStatementsTagInitializer(tag, this::addReadyElement)
     fun customManualNewlineTag(tag: String, init: ManualNewlineStatements.() -> Unit) =
-        ManualNewlineStatementsTagGenerator(tag, this::addReadyElement).also {
+        ManualNewlineStatementsTagInitializer(tag, this::addReadyElement).also {
         it.invoke(init)
     }
 

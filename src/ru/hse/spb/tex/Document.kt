@@ -1,8 +1,6 @@
 package ru.hse.spb.tex
 
-import ru.hse.spb.tex.util.CommandGenerator
 import ru.hse.spb.tex.util.CommandWithoutBodyGenerator
-import ru.hse.spb.tex.util.pairsToParameter
 import ru.hse.spb.tex.util.parametersOrNothing
 import java.io.OutputStream
 import java.io.OutputStreamWriter

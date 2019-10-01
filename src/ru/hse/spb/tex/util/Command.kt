@@ -41,7 +41,7 @@ open class Command(text: String) : CommandWithBody<Command.EmptyElement>(text, E
     }
 }
 
-open class CommandGenerator<Y : Element, T : CommandWithBody<Y>>(
+open class CommandInitializer<Y : Element, T : CommandWithBody<Y>>(
     commandConsumer: (T) -> Any,
     producer: () -> T
 ) {

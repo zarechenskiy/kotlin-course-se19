@@ -27,33 +27,33 @@ open class BeginCommand<E : Element>(val tag: String, body: E) : CommandWithBody
     }
 }
 
-open class BeginGenerator<E : Element>(
+open class BeginInitializer<E : Element>(
     tag: String,
     commandConsumer: (BeginCommand<E>) -> Any,
     bodyProducer: () -> E
-) : CommandGenerator<E, BeginCommand<E>>(
+) : CommandInitializer<E, BeginCommand<E>>(
     commandConsumer,
     { BeginCommand(tag, bodyProducer())}
 )
 
 
 class Item : CommandWithBody<Statements>("item", Statements())
-class ItemGenerator(consumer: (Element) -> Unit) : CommandGenerator<Statements, Item>(consumer, { Item() })
+class ItemInitializer(consumer: (Element) -> Unit) : CommandInitializer<Statements, Item>(consumer, { Item() })
 class Items : Elements() {
-    val item get() = ItemGenerator { addReadyElement(it) }
+    val item get() = ItemInitializer { addReadyElement(it) }
 }
 
-open class ItemTagGenerator(
+open class ItemTagInitializer(
     tag: String,
     commandConsumer: (BeginCommand<Items>) -> Any
-) : BeginGenerator<Items>(tag, commandConsumer, { Items() })
+) : BeginInitializer<Items>(tag, commandConsumer, { Items() })
 
-open class StatementsTagGenerator(
+open class StatementsTagInitializer(
     tag: String,
     commandConsumer: (BeginCommand<Statements>) -> Any
-) : BeginGenerator<Statements>(tag, commandConsumer, { Statements() })
+) : BeginInitializer<Statements>(tag, commandConsumer, { Statements() })
 
-open class ManualNewlineStatementsTagGenerator(
+open class ManualNewlineStatementsTagInitializer(
     tag: String,
     commandConsumer: (BeginCommand<ManualNewlineStatements>) -> Any
-) : BeginGenerator<ManualNewlineStatements>(tag, commandConsumer, { ManualNewlineStatements() })
+) : BeginInitializer<ManualNewlineStatements>(tag, commandConsumer, { ManualNewlineStatements() })
