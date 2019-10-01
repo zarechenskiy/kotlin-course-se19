@@ -18,6 +18,11 @@ open class BeginCommand<E : Element>(tag: String, body: E) : CommandWithBody<E>(
     init {
         addFigureArguments(tag)
     }
+
+    override fun render(output: Writer, indent: String) {
+        output.appendln(indent + commandText())
+        body.render(output, "\t$indent")
+    }
 }
 
 open class BeginGenerator<E : Element>(
