@@ -2,6 +2,9 @@ package ru.hse.spb
 
 import ru.hse.spb.tex.document
 
+// TODO check if latex allows {}[]{}[] and to what degree
+// TODO tests
+// TODO add required commands
 
 fun main() {
     val doc = document {
