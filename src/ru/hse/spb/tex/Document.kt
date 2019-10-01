@@ -1,5 +1,7 @@
 package ru.hse.spb.tex
 
+import ru.hse.spb.tex.util.CommandGenerator
+import ru.hse.spb.tex.util.CommandWithoutBodyGenerator
 import ru.hse.spb.tex.util.pairsToParameter
 import ru.hse.spb.tex.util.parametersOrNothing
 import java.io.OutputStream
@@ -19,12 +21,7 @@ class Document: Statements() {
 
     fun initCommand(command: String) = prelude.command(command)
 
-    fun usepackage(name: String, param1: Pair<String, String>, vararg params: Pair<String, String>) {
-        initCommand("usepackage${pairsToParameter(param1, *params)}{$name}")
-    }
-    fun usepackage(name: String, vararg params: String) {
-        initCommand("usepackage${parametersOrNothing(*params)}{$name}")
-    }
+    val usepackage = CommandWithoutBodyGenerator("usepackage", prelude::addReadyElement)
 
     fun toWriter(output: Writer) {
         render(output, "")

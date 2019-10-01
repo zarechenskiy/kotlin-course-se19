@@ -1,5 +1,6 @@
 package ru.hse.spb.tex
 
+import ru.hse.spb.tex.util.Command
 import ru.hse.spb.tex.util.ItemGenerator
 import ru.hse.spb.tex.util.pairsToParameter
 import java.io.Writer
@@ -46,6 +47,12 @@ open class Elements : Element {
         return element
     }
 
+    // to use as lambda
+    fun <T : Element> addReadyElement(element: T): T {
+        elements.add(element)
+        return element
+    }
+
     override fun render(output: Writer, indent: String) {
         for (statement in elements) {
             statement.render(output, indent)
@@ -71,7 +78,7 @@ open class Statements : Elements() {
     fun customTag(tag: String, parameter: Pair<String, String>, init: Tag.() -> Unit) =
         addElement(Tag(tag + pairsToParameter(parameter)), init)
 
-    fun command(command: String) = +"\\$command"
+    fun command(name: String) = addElement(Command(name))
 }
 
 open class Tag(private val name: String) : Statements() {

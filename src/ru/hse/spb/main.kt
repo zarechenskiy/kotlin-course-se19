@@ -6,12 +6,12 @@ fun main() {
     val doc = document {
         documentClass("beamer")
 
-        usepackage("cmap")
-        usepackage("fontenc", "T2A")
-        usepackage("babel", "russian")
-        usepackage("inputenc", "utf8")
-        usepackage("amsmath, amssymb")
-        usepackage("enumerate")
+        usepackage{+"cmap"}
+        usepackage["T2A"]{+"fontenc"}
+        usepackage["russian"]{+"babel"}
+        usepackage["utf8"]{+"inputenc"}
+        usepackage{+"amsmat, amssymb"}
+        usepackage{+"enumerate"}
 
         customTag("frame") {
             +"123123"

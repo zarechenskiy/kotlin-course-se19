@@ -24,16 +24,30 @@ open class CommandWithBody<T : Element>(val name: String, protected val body: T)
     }
 }
 
-open class Command(name: String) : CommandWithBody<TextArguments>(name, TextArguments())
+open class CommandTag<T : Element>(name: String, body: T) : CommandWithBody<T>(name, body) {
+    override fun render(output: Writer, indent: String) {
+        output.appendln("$indent\\begin${parameters ?: ""}{$name}")
+        body.render(output, indent)
+        output.appendln("$indent\\end{$name$} ")
+    }
+}
+
+open class Command(name: String) : CommandWithBody<TextArguments>(name, TextArguments()) {
+
+    override fun render(output: Writer, indent: String) {
+        output.append("$indent\\$name${parameters ?: ""}")
+        body.render(output, indent)
+    }
+}
 
 open class CommandGenerator<Y : Element, T : CommandWithBody<Y>>(
-    protected val elements: Elements,
+    protected val commandConsumer: (T) -> Any,
     val producer: () -> T
 ) {
     operator fun get(vararg params: String): (Y.() -> Unit) -> Unit {
         val command = producer()
         command.initParams(*params)
-        elements.addElement(command)
+        commandConsumer(command)
         return { command.initBody(it) }
     }
     operator fun get(param: Pair<String, String>, vararg params: Pair<String, String>): (Y.() -> Unit) -> Unit {
@@ -45,8 +59,18 @@ open class CommandGenerator<Y : Element, T : CommandWithBody<Y>>(
     }
 }
 
+open class CommandWithoutBodyGenerator(
+    val commandName: String,
+    commandConsumer: (Command) -> Any
+)
+    : CommandGenerator<TextArguments, Command>(
+    commandConsumer,
+    { Command(commandName) }
+)
 
-// Some default commands
+
+// Some default tex commands
 
 class Item : CommandWithBody<Statements>("item", Statements())
-class ItemGenerator(elements: Elements) : CommandGenerator<Statements, Item>(elements, { Item() })
+class ItemGenerator(elements: Elements) : CommandGenerator<Statements, Item>(elements::addReadyElement, { Item() })
+
