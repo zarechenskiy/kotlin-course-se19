@@ -40,3 +40,8 @@ open class ItemTagGenerator(
     tag: String,
     commandConsumer: (BeginCommand<Items>) -> Any
 ) : BeginGenerator<Items>(tag, commandConsumer, { Items() })
+
+open class StatementsTagGenerator(
+    tag: String,
+    commandConsumer: (BeginCommand<Statements>) -> Any
+) : BeginGenerator<Statements>(tag, commandConsumer, { Statements() })

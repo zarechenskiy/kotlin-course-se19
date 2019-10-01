@@ -2,6 +2,8 @@ package ru.hse.spb
 
 import ru.hse.spb.tex.document
 
+// TODO fix not printing [""]
+
 fun main() {
     val doc = document {
         documentClass("beamer")
@@ -19,7 +21,7 @@ fun main() {
         }
         
         customTag("frame") {
-            enumerate {
+            itemTag("enumerate") {
                 item["33"] {
                     itemize {
                         item { +"1" }
@@ -35,6 +37,10 @@ fun main() {
                 item { +"2" }
                 item { +"3" }
             }
+        }
+
+        customTag("frame") {
+
         }
     }
     print(doc)
