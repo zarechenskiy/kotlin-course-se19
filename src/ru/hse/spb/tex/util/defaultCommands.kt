@@ -40,7 +40,7 @@ open class BeginGenerator<E : Element>(
 class Item : CommandWithBody<Statements>("item", Statements())
 class ItemGenerator(consumer: (Element) -> Unit) : CommandGenerator<Statements, Item>(consumer, { Item() })
 class Items : Elements() {
-    val item = ItemGenerator { addReadyElement(it) }
+    val item get() = ItemGenerator { addReadyElement(it) }
 }
 
 open class ItemTagGenerator(

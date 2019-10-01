@@ -31,6 +31,7 @@ fun main() {
                             +"kek"
                             +"kek"
                         }
+                        item
                         item { +"dva" }
                     }
                 }

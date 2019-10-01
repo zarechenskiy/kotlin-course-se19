@@ -42,9 +42,14 @@ open class Command(text: String) : CommandWithBody<Command.EmptyElement>(text, E
 }
 
 open class CommandGenerator<Y : Element, T : CommandWithBody<Y>>(
-    protected val commandConsumer: (T) -> Any,
-    val producer: () -> T
+    commandConsumer: (T) -> Any,
+    producer: () -> T
 ) {
+    val command = producer()
+    init {
+        commandConsumer(command)
+    }
+
     operator fun get(vararg params: String): ParameterCollector = ParameterCollector(squareParams = params)
     operator fun get(param: Pair<String, String>, vararg params: Pair<String, String>): ParameterCollector =
         get(pairsToParameter(param, *params))
@@ -60,9 +65,7 @@ open class CommandGenerator<Y : Element, T : CommandWithBody<Y>>(
     inner class ParameterCollector(
         squareParams: Array<out String> = emptyArray(), figureParams: Array<out String>? = null
     ) {
-        private val command = producer()
         init {
-            commandConsumer(command)
             command.addSquareArguments(*squareParams)
             if (figureParams != null) {
                 command.addFigureArguments(*figureParams)

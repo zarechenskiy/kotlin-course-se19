@@ -55,8 +55,10 @@ open class Statements : Elements() {
         it.invoke(init)
     }
 
-    val enumerate = itemTag("enumerate")
-    val itemize = itemTag("itemize")
+    val enumerate
+        get() = itemTag("enumerate")
+    val itemize
+        get() = itemTag("itemize")
 
     fun paragraph() = +""
 
@@ -71,7 +73,8 @@ open class Statements : Elements() {
         it.invoke(init)
     }
 
-    val math = customTag("math")
+    val math
+        get() = customTag("math")
 
     fun command(name: String) = CommandWithoutBodyGenerator(name, this::addReadyElement)
 }
