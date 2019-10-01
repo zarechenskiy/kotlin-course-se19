@@ -1,9 +1,6 @@
 package ru.hse.spb.tex
 
-import ru.hse.spb.tex.util.Command
-import ru.hse.spb.tex.util.CommandWithoutBodyGenerator
-import ru.hse.spb.tex.util.ItemGenerator
-import ru.hse.spb.tex.util.pairsToParameter
+import ru.hse.spb.tex.util.*
 import java.io.Writer
 
 
@@ -53,9 +50,11 @@ open class Statements : Elements() {
 
     fun paragraph() = +""
 
-    fun enumerate(init: ItemTag.() -> Unit) = itemTag("enumerate", init)
-    fun itemize(init: ItemTag.() -> Unit) = itemTag("itemize", init)
-    fun itemTag(tag: String, init: ItemTag.() -> Unit) = addElement(ItemTag(tag), init)
+    // addReadyElement only accesses this@Elements.elements and doesn't call any methods
+    @Suppress("LeakingThis")
+    val enumerate = ItemTagGenerator("enumerate", this::addReadyElement)
+    val itemize = ItemTagGenerator("itemize", this::addReadyElement)
+    fun itemTag(tag: String) = ItemTagGenerator(tag, this::addReadyElement)
 
     fun customTag(tag: String, init: Tag.() -> Unit) = addElement(Tag(tag), init)
     fun customTag(tag: String, parameter: String, init: Tag.() -> Unit) =
@@ -64,22 +63,4 @@ open class Statements : Elements() {
         addElement(Tag(tag + pairsToParameter(parameter)), init)
 
     fun command(name: String) = CommandWithoutBodyGenerator(name, this::addReadyElement)
-}
-
-open class Tag(private val name: String) : Statements() {
-    override fun render(output: Writer, indent: String) {
-        output.appendln("$indent\\begin{$name}")
-        super.render(output, indent + "\t")
-        output.appendln("$indent\\end{$name}")
-    }
-}
-
-open class ItemTag(private val name: String) : Elements() {
-    val item = ItemGenerator(this)
-
-    override fun render(output: Writer, indent: String) {
-        output.appendln("$indent\\begin{$name}")
-        super.render(output, indent + "\t")
-        output.appendln("$indent\\end{$name}")
-    }
 }

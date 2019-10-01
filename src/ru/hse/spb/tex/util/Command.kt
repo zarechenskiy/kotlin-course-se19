@@ -5,7 +5,7 @@ import ru.hse.spb.tex.Elements
 import ru.hse.spb.tex.Statements
 import java.io.Writer
 
-open class CommandWithBody<T : Element>(val text: String, private val body: T) : Element {
+open class CommandWithBody<T : Element>(val text: String, protected val body: T) : Element {
     private val squareArguments = arrayListOf<String>()
     private val figureArguments = arrayListOf<ArrayList<String>>()
 
