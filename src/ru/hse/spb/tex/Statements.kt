@@ -61,7 +61,10 @@ open class ManualNewlineStatements : Statements() {
 
 open class FigureBracesStatements : Statements() {
     override fun render(output: Writer, indent: String) {
-        output.appendln("$indent{")
+        if (elements.isEmpty()) {
+            return
+        }
+        output.appendln("{")
         for (statement in elements) {
             statement.render(output, indent + "\t")
         }
