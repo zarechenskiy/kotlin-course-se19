@@ -1,6 +1,5 @@
 package ru.hse.spb.tex
 
-import ru.hse.spb.tex.util.*
 import java.io.OutputStream
 import java.io.OutputStreamWriter
 import java.io.StringWriter
@@ -65,7 +64,8 @@ open class Statements : Elements() {
         elements.add(TextStatement(this))
     }
 
-    fun itemTag(tag: String) = CommandInitializer(addReadyElement(BeginCommand(tag, Items())))
+    fun itemTag(tag: String) =
+        CommandInitializer(addReadyElement(BeginCommand(tag, Items())))
     fun itemTag(tag: String, init: Items.() -> Unit) = itemTag(tag).invoke(init)
 
     val enumerate

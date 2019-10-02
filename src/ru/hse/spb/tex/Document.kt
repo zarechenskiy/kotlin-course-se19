@@ -1,9 +1,5 @@
 package ru.hse.spb.tex
 
-import ru.hse.spb.tex.util.BeginCommand
-import ru.hse.spb.tex.util.Command
-import ru.hse.spb.tex.util.CommandInitializer
-import ru.hse.spb.tex.util.parametersOrNothing
 import java.io.Writer
 
 class Document: Statements() {
@@ -23,7 +19,14 @@ class Document: Statements() {
 
     val usepackage get() = CommandInitializer(prelude.addReadyElement(Command("usepackage")))
 
-    val frame get() = CommandInitializer(addReadyElement(BeginCommand("frame", Statements())))
+    val frame get() = CommandInitializer(
+        addReadyElement(
+            BeginCommand(
+                "frame",
+                Statements()
+            )
+        )
+    )
 
     override fun render(output: Writer, indent: String) {
         output.apply {

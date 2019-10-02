@@ -1,6 +1,6 @@
-package ru.hse.spb.tex.util
+package ru.hse.spb.tex
 
-import ru.hse.spb.tex.Element
+import ru.hse.spb.tex.util.pairsToParameter
 
 open class CommandInitializer<Y : Element, T : CommandWithBody<Y>>(val command: T) {
 

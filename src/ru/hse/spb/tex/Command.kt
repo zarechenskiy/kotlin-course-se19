@@ -1,6 +1,6 @@
-package ru.hse.spb.tex.util
+package ru.hse.spb.tex
 
-import ru.hse.spb.tex.Element
+import ru.hse.spb.tex.util.parametersOrNothing
 import java.io.Writer
 
 open class CommandWithBody<T : Element>(val text: String, protected val body: T) : Element {
@@ -23,7 +23,8 @@ open class CommandWithBody<T : Element>(val text: String, protected val body: T)
     }
 
     protected fun commandText(): String = "\\$text${squareParametersText()}${figureParametersText()}"
-    private fun squareParametersText(): String = parametersOrNothing(*squareArguments.toTypedArray())
+    private fun squareParametersText(): String =
+        parametersOrNothing(*squareArguments.toTypedArray())
     private fun figureParametersText(): String = if (figureArguments.isNotEmpty()) {
         figureArguments.joinToString("}{", "{", "}") {
             it.joinToString(", ")
@@ -33,7 +34,9 @@ open class CommandWithBody<T : Element>(val text: String, protected val body: T)
     }
 }
 
-open class Command(text: String) : CommandWithBody<Command.EmptyElement>(text, EmptyElement()) {
+open class Command(text: String) : CommandWithBody<Command.EmptyElement>(text,
+    EmptyElement()
+) {
     class EmptyElement : Element {
         override fun render(output: Writer, indent: String) {}
     }

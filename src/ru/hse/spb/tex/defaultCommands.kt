@@ -1,9 +1,5 @@
-package ru.hse.spb.tex.util
+package ru.hse.spb.tex
 
-import ru.hse.spb.tex.Element
-import ru.hse.spb.tex.Elements
-import ru.hse.spb.tex.ManualNewlineStatements
-import ru.hse.spb.tex.Statements
 import java.io.Writer
 
 
