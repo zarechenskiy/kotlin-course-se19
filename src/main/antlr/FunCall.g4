@@ -8,7 +8,7 @@ block
     : (NEWLINE* statements+=statement NEWLINE*)*
     ;
 
-block_with_braces
+blockWithBraces
     : '{' SPACES? block  SPACES? '}'
     ;
 
@@ -16,14 +16,14 @@ statement
     : function
     | variable
     | expression
-    | while
-    | if
+    | whileBlock
+    | ifBlock
     | assignment
-    | return
+    | returnBlock
     ;
 
 function
-    : 'fun' IDENTIFIER SPACES? '(' parameterNames? ')' SPACES? block_with_braces
+    : 'fun' IDENTIFIER SPACES? '(' parameterNames? ')' SPACES? blockWithBraces
     ;
 
 variable
@@ -31,15 +31,15 @@ variable
     ;
 
 parameterNames
-    : IDENTIFIER{','}
+    : IDENTIFIER SPACES? (',' SPACES? IDENTIFIER SPACES?)*
     ;
 
-while
-    : 'while' SPACES? '(' expression ')' SPACES? block_with_braces
+whileBlock
+    : 'while' SPACES? '(' expression ')' SPACES? blockWithBraces
     ;
 
-if
-    : 'if' SPACES? '(' expression ')' SPACES? block_with_braces ('else' block_with_braces)?
+ifBlock
+    : 'if' SPACES? '(' expression ')' SPACES? blockWithBraces ('else' blockWithBraces)?
     ;
 
 assignment
@@ -50,12 +50,12 @@ expression
     : functionCall
     | '(' SPACES? expression SPACES? ')'
     // binariExpression
-    | expression SPACES? ('*' | '/' | '%') SPACES? expression
-    | expression SPACES? ('+' | '-') SPACES? expression
-    | expression SPACES? ('<' | '>') '='? SPACES? expression
-    | expression SPACES? ('!' | '=') '=' SPACES? expression
-    | expression SPACES? ('&&') SPACES? expression
-    | expression SPACES? ('||') SPACES? expression
+    | expression SPACES? op+=('*' | '/' | '%') SPACES? expression
+    | expression SPACES? op+=('+' | '-') SPACES? expression
+    | expression SPACES? op+=('<' | '>' | '<=' | '>=') SPACES? expression
+    | expression SPACES? op+=('!=' | '==') SPACES? expression
+    | expression SPACES? op+='&&' SPACES? expression
+    | expression SPACES? op+='||' SPACES? expression
     //
     | IDENTIFIER
     | NUMBER_LITERAL
@@ -66,49 +66,13 @@ functionCall
     ;
 
 arguments
-    : expression{','}
+    : expression SPACES? (',' SPACES? expression SPACES?)*
     ;
 
-return
+returnBlock
     : 'return' SPACES expression
     ;
 
-/*
-    Арифметическое выражение с операциями: +, -, *, /, %, >, <, >=, <=, ==, !=, ||, &&
-    Семантика и приоритеты операций примерно как в Си
-*/
-//binariExpression
-//    : binariExpressionPrecedence3
-//    | binariExpressionPrecedence4
-//    | binariExpressionPrecedence6
-//    | binariExpressionPrecedence7
-//    | binariExpressionPrecedence11
-//    | binariExpressionPrecedence12
-//    ;
-//
-//// https://en.cppreference.com/w/c/language/operator_precedence
-//binariExpressionPrecedence3
-//    : expression SPACES* ('*' | '/' | '%') SPACES* expression
-//    ;
-//
-//binariExpressionPrecedence4
-//    : expression SPACES* ('+' | '-') SPACES* expression
-//    ;
-//
-//binariExpressionPrecedence6
-//    : expression SPACES* ('<' | '>') '='? SPACES* expression
-//    ;
-//
-//binariExpressionPrecedence7
-//    : expression SPACES* ('!' | '=') '=' SPACES* expression
-//    ;
-//
-//binariExpressionPrecedence11
-//    : expression SPACES* ('&&') SPACES* expression
-//    ;
-//binariExpressionPrecedence12
-//    : expression SPACES* ('||') SPACES* expression
-//    ;
 // ------------- RULES FOR LEXER -------------
 
 IDENTIFIER
@@ -127,3 +91,27 @@ NEWLINE
 SPACES
     : ' '+
     ;
+
+// https://en.cppreference.com/w/c/language/operator_precedence
+//BINART_OPERATORS_PRECEDENCE3
+//    : ('*' | '/' | '%')
+//    ;
+//
+//BINART_OPERATORS_PRECEDENCE4
+//    : ('+' | '-') SPACES*
+//    ;
+//
+//BINART_OPERATORS_PRECEDENCE6
+//    : ('<' | '>') '='?
+//    ;
+//
+//BINART_OPERATORS_PRECEDENCE7
+//    : ('!' | '=') '='
+//    ;
+//
+//BINART_OPERATORS_PRECEDENCE11
+//    : '&&'
+//    ;
+//BINART_OPERATORS_PRECEDENCE12
+//    : '||'
+//    ;
