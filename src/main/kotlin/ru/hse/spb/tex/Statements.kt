@@ -62,6 +62,7 @@ open class ManualNewlineStatements : Statements() {
 open class FigureBracesStatements : Statements() {
     override fun render(output: Writer, indent: String) {
         if (elements.isEmpty()) {
+            output.appendln()
             return
         }
         output.appendln("{")
