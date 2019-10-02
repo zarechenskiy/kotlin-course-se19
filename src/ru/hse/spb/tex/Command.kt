@@ -3,7 +3,7 @@ package ru.hse.spb.tex
 import ru.hse.spb.tex.util.parametersOrNothing
 import java.io.Writer
 
-open class CommandWithBody<T : Element>(val text: String, protected val body: T) : Element {
+open class CommandWithBody<T : Element>(private val text: String, protected val body: T) : Element {
     private val squareArguments = arrayListOf<String>()
     private val figureArguments = arrayListOf<ArrayList<String>>()
 

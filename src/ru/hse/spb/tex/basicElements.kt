@@ -44,10 +44,10 @@ open class Elements : Element {
     }
 
     // to use as lambda
-    fun <T : Element> addReadyElement(element: T): T {
-        elements.add(element)
-        return element
-    }
+//    fun <T : Element> addElement(element: T): T {
+//        elements.add(element)
+//        return element
+//    }
 
     override fun render(output: Writer, indent: String) {
         for (statement in elements) {
@@ -56,7 +56,7 @@ open class Elements : Element {
     }
 }
 
-// It's because of this::addReadyElement and it only only accesses this@Elements.elements and doesn't call any methods
+// It's because of this::addElement and it only only accesses this@Elements.elements and doesn't call any methods
 @Suppress("LeakingThis")
 open class Statements : Elements() {
 
@@ -65,7 +65,7 @@ open class Statements : Elements() {
     }
 
     fun itemTag(tag: String) =
-        CommandInitializer(addReadyElement(BeginCommand(tag, Items())))
+        CommandInitializer(addElement(BeginCommand(tag, Items())))
     fun itemTag(tag: String, init: Items.() -> Unit) = itemTag(tag).invoke(init)
 
     val enumerate
@@ -76,12 +76,12 @@ open class Statements : Elements() {
     fun emptyLn() = +""
 
     fun customTag(tag: String) =
-        CommandInitializer(addReadyElement(BeginCommand(tag, Statements())))
+        CommandInitializer(addElement(BeginCommand(tag, Statements())))
     fun customTag(tag: String, init: Statements.() -> Unit) =
         customTag(tag).invoke(init)
 
     fun customManualNewlineTag(tag: String) =
-        CommandInitializer(addReadyElement(BeginCommand(tag, ManualNewlineStatements())))
+        CommandInitializer(addElement(BeginCommand(tag, ManualNewlineStatements())))
     fun customManualNewlineTag(tag: String, init: ManualNewlineStatements.() -> Unit) =
         customManualNewlineTag(tag).invoke(init)
 
@@ -91,7 +91,7 @@ open class Statements : Elements() {
     val align
         get() = customManualNewlineTag("align*")
 
-    fun command(name: String) = CommandWithoutBodyInitializer(name, this::addReadyElement)
+    fun command(name: String) = CommandInitializer(addElement(Command(name)))
 
 }
 

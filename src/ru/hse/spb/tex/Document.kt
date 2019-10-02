@@ -17,10 +17,10 @@ class Document: Statements() {
     fun newcommand(newCommand: String) = initCommand("newcommand{\\$newCommand}")
     fun withPrelude(initCommands: Statements.() -> Unit) = prelude.initCommands()
 
-    val usepackage get() = CommandInitializer(prelude.addReadyElement(Command("usepackage")))
+    val usepackage get() = CommandInitializer(prelude.addElement(Command("usepackage")))
 
     val frame get() = CommandInitializer(
-        addReadyElement(
+        addElement(
             BeginCommand(
                 "frame",
                 Statements()

@@ -3,7 +3,7 @@ package ru.hse.spb.tex
 import java.io.Writer
 
 
-open class BeginCommand<E : Element>(val tag: String, body: E) : CommandWithBody<E>("begin", body) {
+open class BeginCommand<E : Element>(private val tag: String, body: E) : CommandWithBody<E>("begin", body) {
     init {
         addFigureArguments(tag)
     }
@@ -15,16 +15,7 @@ open class BeginCommand<E : Element>(val tag: String, body: E) : CommandWithBody
     }
 }
 
-open class BeginInitializer<E : Element>(
-    tag: String,
-    commandConsumer: (BeginCommand<E>) -> Any,
-    bodyProducer: () -> E
-) : CommandInitializer<E, BeginCommand<E>>(
-    BeginCommand(tag, bodyProducer()).also { commandConsumer(it)}
-)
-
-
 class Item : CommandWithBody<Statements>("item", Statements())
 class Items : Elements() {
-    val item get() = CommandInitializer(addReadyElement(Item()))
+    val item get() = CommandInitializer(addElement(Item()))
 }

@@ -2,7 +2,7 @@ package ru.hse.spb.tex
 
 import ru.hse.spb.tex.util.pairsToParameter
 
-open class CommandInitializer<Y : Element, T : CommandWithBody<Y>>(val command: T) {
+open class CommandInitializer<Y : Element, T : CommandWithBody<Y>>(private val command: T) {
 
     operator fun get(vararg params: String): CommandInitializer<Y, T> {
         command.addSquareArguments(*params)
@@ -25,11 +25,3 @@ open class CommandInitializer<Y : Element, T : CommandWithBody<Y>>(val command: 
         invoke(commandInit)
     }
 }
-
-open class CommandWithoutBodyInitializer(
-    commandName: String,
-    commandConsumer: (Command) -> Any
-)
-    : CommandInitializer<Command.EmptyElement, Command>(
-    Command(commandName).also { commandConsumer(it) }
-)
