@@ -43,12 +43,6 @@ open class Elements : Element {
         return element
     }
 
-    // to use as lambda
-//    fun <T : Element> addElement(element: T): T {
-//        elements.add(element)
-//        return element
-//    }
-
     override fun render(output: Writer, indent: String) {
         for (statement in elements) {
             statement.render(output, indent)
