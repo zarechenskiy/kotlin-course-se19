@@ -65,7 +65,7 @@ open class CommandInitializer<Y : Element, T : CommandWithBody<Y>>(val command: 
     }
 }
 
-open class CommandWithoutBodyGenerator(
+open class CommandWithoutBodyInitializer(
     commandName: String,
     commandConsumer: (Command) -> Any
 )

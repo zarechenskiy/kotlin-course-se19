@@ -91,7 +91,7 @@ open class Statements : Elements() {
     val align
         get() = customManualNewlineTag("align*")
 
-    fun command(name: String) = CommandWithoutBodyGenerator(name, this::addReadyElement)
+    fun command(name: String) = CommandWithoutBodyInitializer(name, this::addReadyElement)
 
 }
 
