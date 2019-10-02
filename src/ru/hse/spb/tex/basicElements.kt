@@ -93,10 +93,24 @@ open class Statements : Elements() {
 
     fun command(name: String) = CommandInitializer(addElement(Command(name)))
 
+    fun bracesCommand(name: String) = CommandInitializer(addElement(FigureBracesCommand(name)))
+    fun bracesCommand(name: String, init: FigureBracesStatements.() -> Unit) =
+        CommandInitializer(addElement(FigureBracesCommand(name))).invoke(init)
+
 }
 
 open class ManualNewlineStatements : Statements() {
     override operator fun String.unaryPlus() {
         elements.add(TextStatement(this + "\\\\"))
+    }
+}
+
+open class FigureBracesStatements : Statements() {
+    override fun render(output: Writer, indent: String) {
+        output.appendln("$indent{")
+        for (statement in elements) {
+            statement.render(output, indent + "\t")
+        }
+        output.appendln("$indent}")
     }
 }

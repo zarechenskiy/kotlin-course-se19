@@ -34,10 +34,21 @@ open class CommandWithBody<T : Element>(private val text: String, protected val 
     }
 }
 
-open class Command(text: String) : CommandWithBody<Command.EmptyElement>(text,
+open class Command(text: String) : CommandWithBody<Command.EmptyElement>(
+    text,
     EmptyElement()
 ) {
     class EmptyElement : Element {
         override fun render(output: Writer, indent: String) {}
+    }
+}
+
+open class FigureBracesCommand(text: String) : CommandWithBody<FigureBracesStatements>(
+    text,
+    FigureBracesStatements()
+) {
+    override fun render(output: Writer, indent: String) {
+        output.append(indent + commandText())
+        body.render(output, indent)
     }
 }

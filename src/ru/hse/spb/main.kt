@@ -2,7 +2,6 @@ package ru.hse.spb
 
 import ru.hse.spb.tex.document
 
-// TODO check if latex allows {}[]{}[] and to what degree
 // TODO tests
 // TODO add required commands
 
@@ -16,6 +15,10 @@ fun main() {
         usepackage["utf8"]("inputenc")
         initCommand("textwidth=160mm")
         def("INF")("\\infty")
+        newcommand("kek") {
+            command("INF")
+        }
+        newcommand("kek2")("bob2")
         usepackage("amsmat", "amssymb")
         usepackage("enumerate")
 

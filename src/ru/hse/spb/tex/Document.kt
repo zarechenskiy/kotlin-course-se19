@@ -14,8 +14,14 @@ class Document: Statements() {
 
     fun initCommand(commandText: String) = prelude.command(commandText)
     fun def(newCommand: String) = initCommand("def\\$newCommand")
-    fun newcommand(newCommand: String) = initCommand("newcommand{\\$newCommand}")
-    fun withPrelude(initCommands: Statements.() -> Unit) = prelude.initCommands()
+    fun <T> withPrelude(initCommands: Statements.() -> T) = prelude.initCommands()
+
+    fun newcommand(newCommand: String) = withPrelude {
+        bracesCommand(newCommand)
+    }
+    fun newcommand(newCommand: String, init: FigureBracesStatements.() -> Unit) = withPrelude {
+        bracesCommand(newCommand).invoke(init)
+    }
 
     val usepackage get() = CommandInitializer(prelude.addElement(Command("usepackage")))
 
