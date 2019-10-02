@@ -8,7 +8,6 @@ import java.io.Writer
 
 class Document: Statements() {
     private var documentClass = DocumentClass().apply { addFigureArguments("article") }
-    private var documentClassArguments: String? = null
     private val prelude = Statements()
 
     fun documentClass(documentClassName: String): CommandInitializer<Command.EmptyElement, DocumentClass> {
