@@ -2,7 +2,6 @@ package ru.hse.spb
 
 import ru.hse.spb.tex.document
 
-// TODO tests
 // TODO add required commands
 
 fun main() {
