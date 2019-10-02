@@ -2,10 +2,9 @@ package ru.hse.spb
 
 import ru.hse.spb.tex.document
 
-// TODO add required commands
-
+// a small showcase
 fun main() {
-    val doc = document {
+    document {
         documentClass("beamer")
 
         usepackage("cmap")
@@ -64,6 +63,5 @@ fun main() {
                 command("hline")
             }
         }
-    }
-    print(doc.stringRepresentation)
+    }.toOutputStream(System.out)
 }
