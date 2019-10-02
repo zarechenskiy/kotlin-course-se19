@@ -43,41 +43,25 @@ open class Command(text: String) : CommandWithBody<Command.EmptyElement>(text, E
 
 open class CommandInitializer<Y : Element, T : CommandWithBody<Y>>(val command: T) {
 
-    operator fun get(vararg params: String): ParameterCollector = ParameterCollector(squareParams = params)
-    operator fun get(param: Pair<String, String>, vararg params: Pair<String, String>): ParameterCollector =
+    operator fun get(vararg params: String): CommandInitializer<Y, T> {
+        command.addSquareArguments(*params)
+        return this
+    }
+    operator fun get(param: Pair<String, String>, vararg params: Pair<String, String>): CommandInitializer<Y, T> =
         get(pairsToParameter(param, *params))
 
-    operator fun invoke(commandInit: Y.() -> Unit) = get()(commandInit)
+    operator fun invoke(vararg figureParams: String): CommandInitializer<Y, T> {
+        command.addFigureArguments(*figureParams)
+        return this
+    }
 
-    operator fun invoke(vararg figureParams: String): ParameterCollector =
-        ParameterCollector(figureParams = figureParams)
+    operator fun invoke(commandInit: Y.() -> Unit) {
+        command.initBody(commandInit)
+    }
 
-    operator fun invoke(vararg figureParams: String, commandInit: Y.() -> Unit) =
-        invoke(*figureParams).invoke(commandInit)
-
-    inner class ParameterCollector(
-        squareParams: Array<out String> = emptyArray(), figureParams: Array<out String>? = null
-    ) {
-        init {
-            command.addSquareArguments(*squareParams)
-            if (figureParams != null) {
-                command.addFigureArguments(*figureParams)
-            }
-        }
-
-        operator fun invoke(vararg figureParams: String): ParameterCollector {
-            command.addFigureArguments(*figureParams)
-            return this
-        }
-
-        operator fun invoke(commandInit: Y.() -> Unit) {
-            command.initBody(commandInit)
-        }
-
-        operator fun invoke(vararg figureParams: String, commandInit: Y.() -> Unit) {
-            invoke(*figureParams)
-            invoke(commandInit)
-        }
+    operator fun invoke(vararg figureParams: String, commandInit: Y.() -> Unit) {
+        invoke(*figureParams)
+        invoke(commandInit)
     }
 }
 

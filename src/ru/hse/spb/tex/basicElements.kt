@@ -86,9 +86,13 @@ open class Statements : Elements() {
         customManualNewlineTag(tag).invoke(init)
 
     val math
-        get() = customTag("math")
+        get() = customManualNewlineTag("math")
+
+    val align
+        get() = customManualNewlineTag("align*")
 
     fun command(name: String) = CommandWithoutBodyGenerator(name, this::addReadyElement)
+
 }
 
 open class ManualNewlineStatements : Statements() {

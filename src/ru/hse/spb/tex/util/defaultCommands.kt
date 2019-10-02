@@ -15,7 +15,7 @@ open class BeginCommand<E : Element>(val tag: String, body: E) : CommandWithBody
     override fun render(output: Writer, indent: String) {
         output.appendln(indent + commandText())
         body.render(output, "\t$indent")
-        output.appendln("\\end{$tag}")
+        output.appendln("$indent\\end{$tag}")
     }
 }
 

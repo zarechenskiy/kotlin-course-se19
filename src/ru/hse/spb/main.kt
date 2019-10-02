@@ -24,7 +24,7 @@ fun main() {
             command("color")("blue")
         }
         
-        customTag("frame") {
+        frame {
             itemTag("enumerate") {
                 item["33"] {
                     itemize {

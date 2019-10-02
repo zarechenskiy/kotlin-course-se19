@@ -1,29 +1,34 @@
 package ru.hse.spb.tex
 
+import ru.hse.spb.tex.util.BeginCommand
 import ru.hse.spb.tex.util.Command
 import ru.hse.spb.tex.util.CommandInitializer
 import ru.hse.spb.tex.util.parametersOrNothing
 import java.io.Writer
 
 class Document: Statements() {
-    private var documentClass = "article"
+    private var documentClass = DocumentClass().apply { addFigureArguments("article") }
     private var documentClassArguments: String? = null
     private val prelude = Statements()
 
-    fun documentClass(documentClassName: String, parameters: String? = null) {
-        documentClass = documentClassName
-        documentClassArguments = parameters
+    fun documentClass(documentClassName: String): CommandInitializer<Command.EmptyElement, DocumentClass> {
+        documentClass = DocumentClass()
+        documentClass.addFigureArguments(documentClassName)
+        return CommandInitializer(documentClass)
     }
 
     fun initCommand(commandText: String) = prelude.command(commandText)
-    fun def(newComand: String) = initCommand("def\\$newComand")
+    fun def(newCommand: String) = initCommand("def\\$newCommand")
+    fun newcommand(newCommand: String) = initCommand("newcommand{\\$newCommand}")
     fun withPrelude(initCommands: Statements.() -> Unit) = prelude.initCommands()
 
     val usepackage get() = CommandInitializer(prelude.addReadyElement(Command("usepackage")))
 
+    val frame get() = CommandInitializer(addReadyElement(BeginCommand("frame", Statements())))
+
     override fun render(output: Writer, indent: String) {
         output.apply {
-            append("$indent\\documentclass${parametersOrNothing(documentClassArguments)}{$documentClass}")
+            documentClass.render(output, indent)
             appendln("")
             prelude.render(output, indent)
             appendln("$indent\\begin{document}")
@@ -31,6 +36,8 @@ class Document: Statements() {
             appendln("$indent\\end{document}")
         }
     }
+
+    class DocumentClass : Command("documentclass")
 }
 
 fun document(init: Document.() -> Unit) = Document().apply(init)
