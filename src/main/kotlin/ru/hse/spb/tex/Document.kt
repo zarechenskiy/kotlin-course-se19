@@ -6,9 +6,8 @@ class Document: Statements() {
     private var documentClass = DocumentClass().apply { addFigureArguments("article") }
     private val prelude = Statements()
 
-    fun documentClass(documentClassName: String): CommandInitializer<Command.EmptyElement, DocumentClass> {
+    fun documentClass(): CommandInitializer<Command.EmptyElement, DocumentClass> {
         documentClass = DocumentClass()
-        documentClass.addFigureArguments(documentClassName)
         return CommandInitializer(documentClass)
     }
 
