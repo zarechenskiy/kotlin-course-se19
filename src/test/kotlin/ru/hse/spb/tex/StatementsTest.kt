@@ -227,8 +227,16 @@ internal class StatementsTest {
     @Test
     fun `command with multiple arguments test`() {
         val command = "BOB"
-        test("\\$command[a1]{a2}[a3\n") {
-            command(command)["a1"]("a2")["a3"]
+        test("\\$command[a1]{a2}[a3]{a4}\n") {
+            command(command)["a1"]("a2")["a3"]("a4")
+        }
+    }
+
+    @Test
+    fun `command with multiple empty arguments test`() {
+        val command = "BOB"
+        test("\\$command[]{}[][]{}{}\n") {
+            command(command)[""]()[""][""]()()
         }
     }
 

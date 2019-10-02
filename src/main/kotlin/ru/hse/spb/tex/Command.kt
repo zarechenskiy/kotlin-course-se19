@@ -1,18 +1,21 @@
 package ru.hse.spb.tex
 
+import ru.hse.spb.tex.util.convertToParameters
 import ru.hse.spb.tex.util.parametersOrNothing
 import java.io.Writer
+import java.lang.StringBuilder
 
 open class CommandWithBody<T : Element>(private val text: String, protected val body: T) : Element {
-    private val squareArguments = arrayListOf<String>()
+    private val squareArguments = arrayListOf<ArrayList<String>>()
     private val figureArguments = arrayListOf<ArrayList<String>>()
+    private val arguments = StringBuilder()
 
     fun addSquareArguments(vararg squareParams: String) {
-        squareArguments.addAll(squareParams)
+        arguments.append(squareParams.joinToString(", ", "[", "]"))
     }
 
     fun addFigureArguments(vararg figureParams: String) {
-        figureArguments.add(arrayListOf(*figureParams))
+        arguments.append(figureParams.joinToString(", ", "{", "}"))
     }
 
     fun initBody(bodyInitializer: T.() -> Unit) = body.bodyInitializer()
@@ -22,16 +25,7 @@ open class CommandWithBody<T : Element>(private val text: String, protected val 
         body.render(output, indent)
     }
 
-    protected fun commandText(): String = "\\$text${squareParametersText()}${figureParametersText()}"
-    private fun squareParametersText(): String =
-        parametersOrNothing(*squareArguments.toTypedArray())
-    private fun figureParametersText(): String = if (figureArguments.isNotEmpty()) {
-        figureArguments.joinToString("}{", "{", "}") {
-            it.joinToString(", ")
-        }
-    } else {
-        ""
-    }
+    protected fun commandText(): String = "\\$text$arguments"
 }
 
 open class Command(text: String) : CommandWithBody<Command.EmptyElement>(
