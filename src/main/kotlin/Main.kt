@@ -1,6 +1,7 @@
 package ru.hse.spb
 
 import java.io.OutputStream
+import java.lang.StringBuilder
 
 interface Element {
     fun toOutputStream(stream: OutputStream, indent: String)
@@ -8,7 +9,7 @@ interface Element {
 
 abstract class Tag(
     private val tagName: String,
-    private val arg: String?
+    protected val arg: String?
 ): Element {
 
     override fun toOutputStream(stream: OutputStream, indent: String) {
@@ -31,11 +32,17 @@ abstract class TagWithBlock(
         return tag
     }
 
-    fun frame(init: Frame.() -> Unit) = initTag(Frame(), init)
+    fun frame(
+        frameTitle: String,
+        attributes: Pair<String, String>,
+        init: Frame.() -> Unit
+    ) = initTag(Frame("frame", frameTitle, attributes), init)
 
     fun itemize(init: Itemize.() -> Unit) = initTag(Itemize(), init)
 
     fun enumerate(init: Enumerate.() -> Unit) = initTag(Enumerate(), init)
+
+    fun math(formula: String) = initTag(Math(formula), {})
 
     override fun toOutputStream(stream: OutputStream, indent: String) {
         stream.write("$indent\\begin{$tagName}${System.lineSeparator()}".toByteArray())
@@ -49,6 +56,14 @@ abstract class TagWithBlock(
 class DocumentClass(docClass: String): Tag("documentclass", docClass)
 class Package(name: String): Tag("usepackage", name)
 class FrameTitle(title: String): Tag("frametitle", title)
+
+class Math(formula: String): Tag("math", formula) {
+
+    override fun toOutputStream(stream: OutputStream, indent: String) {
+        stream.write("$indent\$$arg\$${System.lineSeparator()}".toByteArray())
+    }
+}
+
 class Item: TagWithBlock("item") {
 
     override fun toOutputStream(stream: OutputStream, indent: String) {
@@ -59,11 +74,22 @@ class Item: TagWithBlock("item") {
     }
 }
 
-class Frame: TagWithBlock("frame") {
+class Frame(
+    tagName: String,
+    frameTitle: String,
+    private val attributes: Pair<String, String>
+) : TagWithBlock(tagName) {
 
-    fun frametitle(title: String) {
-        val frameTitle = FrameTitle(title)
-        this.children.add(frameTitle)
+    init {
+        initTag(FrameTitle(frameTitle), {})
+    }
+
+    override fun toOutputStream(stream: OutputStream, indent: String) {
+        stream.write("$indent\\begin{frame}[${attributes.first}=${attributes.second}]${System.lineSeparator()}".toByteArray())
+        for (child in children) {
+            child.toOutputStream(stream, "$indent    ")
+        }
+        stream.write("$indent\\end{frame}${System.lineSeparator()}".toByteArray())
     }
 }
 
@@ -104,19 +130,8 @@ fun main() {
     document {
         usepackage("babel", "russian", "minted", "enumerate")
         documentClass("beamer")
-        enumerate {
-            item {
+        frame("Best", "allowframebreaks" to "true") {
 
-            }
-            frame {
-                frame {
-                    enumerate {
-                        item {
-
-                        }
-                    }
-                }
-            }
         }
     }.toOutputStream(System.out)
 }
