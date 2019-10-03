@@ -1,15 +1,21 @@
 package ru.hse.spb
 
 import java.io.OutputStream
-import java.lang.StringBuilder
 
 interface Element {
     fun toOutputStream(stream: OutputStream, indent: String)
 }
 
+class TextElement(private val text: String): Element {
+
+    override fun toOutputStream(stream: OutputStream, indent: String) {
+        stream.write("$indent$text${System.lineSeparator()}".toByteArray())
+    }
+}
+
 abstract class Tag(
     private val tagName: String,
-    protected val arg: String?
+    protected val arg: String
 ): Element {
 
     override fun toOutputStream(stream: OutputStream, indent: String) {
@@ -50,6 +56,10 @@ abstract class TagWithBlock(
             child.toOutputStream(stream, "$indent    ")
         }
         stream.write("$indent\\end{$tagName}${System.lineSeparator()}".toByteArray())
+    }
+
+    operator fun String.unaryPlus() {
+        children.add(TextElement(this))
     }
 }
 
@@ -126,12 +136,19 @@ fun document(init: Document.() -> Unit): Document {
     return document
 }
 
+
+
 fun main() {
+    val rows = arrayListOf("a", "b", "c")
     document {
         usepackage("babel", "russian", "minted", "enumerate")
         documentClass("beamer")
         frame("Best", "allowframebreaks" to "true") {
-
+            itemize {
+                for (row in rows) {
+                    item { +"$row" }
+                }
+            }
         }
     }.toOutputStream(System.out)
 }
