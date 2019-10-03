@@ -9,12 +9,13 @@ class Visitor(private var currentScope: Scope = Scope.createRootScope()) : FunCa
     var returnValue = 0
         private set
 
+    var itsTimeToStop = false
     override fun visitFile(ctx: FunCallParser.FileContext) {
         ctx.block().accept(this)
     }
 
     override fun visitBlock(ctx: FunCallParser.BlockContext) {
-        for (statement in ctx.statements) {
+        for (statement in ctx.statement()) {
             statement.accept(this)
         }
     }
@@ -26,14 +27,19 @@ class Visitor(private var currentScope: Scope = Scope.createRootScope()) : FunCa
     }
 
     override fun visitStatement(ctx: FunCallParser.StatementContext) {
-        val type = ctx.assignment()
-                ?: ctx.expression()
-                ?: ctx.function()
-                ?: ctx.ifBlock()
-                ?: ctx.returnBlock()
-                ?: ctx.whileBlock()
-                ?: error("unknown statement")
+        if (itsTimeToStop)
+            return
 
+        val type = with(ctx) {
+            assignment()
+                    ?: expression()
+                    ?: function()
+                    ?: ifBlock()
+                    ?: returnBlock()
+                    ?: whileBlock()
+                    ?: variable()
+                    ?: error("unknown statement")
+        }
         type.accept(this)
     }
 
@@ -75,11 +81,12 @@ class Visitor(private var currentScope: Scope = Scope.createRootScope()) : FunCa
     }
 
     override fun visitExpression(ctx: FunCallParser.ExpressionContext) {
-        val op = ctx.op.filterNotNull().firstOrNull()?.text
+        val op = ctx.op?.text
         val expr = ctx.expression().filterNotNull()
         returnValue = with(ctx) {
             NUMBER_LITERAL()?.text?.toInt()
-                    ?: IDENTIFIER()?.text?.toInt()
+                    ?: NUMBER_LITERAL()?.text?.toInt()
+                    ?: IDENTIFIER()?.text?.let { currentScope.getVar(it) }
                     ?: op?.let { applyOperator(it, { this@Visitor.calc(expr[0]) }, { this@Visitor.calc(expr[1]) }) }
                     ?: expr.getOrNull(0)?.let { this@Visitor.calc(it) }
                     ?: functionCall()?.let { this@Visitor.calc(it) }
@@ -95,12 +102,13 @@ class Visitor(private var currentScope: Scope = Scope.createRootScope()) : FunCa
 
     override fun visitReturnBlock(ctx: FunCallParser.ReturnBlockContext) {
         ctx.expression().accept(this)
+        itsTimeToStop = true
     }
 
     private fun calc(ctx: ParserRuleContext) = this.also { ctx.accept(this) }.returnValue
 
     companion object {
-        fun applyOperator(str: String, left: () -> Int, right: () -> Int): Int = when (str) {
+        inline fun applyOperator(str: String, left: () -> Int, right: () -> Int): Int = when (str) {
             "*" -> left() * right()
             "/" -> left() / right()
             "%" -> left() % right()

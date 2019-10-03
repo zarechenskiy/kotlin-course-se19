@@ -15,6 +15,10 @@ class UserFunction(
         private val block: FunCallParser.BlockContext
 ) : Function {
 
+    init {
+        scope.defFun(name, this)
+    }
+
     override fun apply(args: List<Int>): Int {
         if (args.size != argNames.size)
             error("$name expected ${argNames.size} arguments, got ${args.size}")

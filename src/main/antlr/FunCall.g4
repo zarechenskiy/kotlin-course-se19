@@ -5,25 +5,26 @@ file
     ;
 
 block
-    : (NEWLINE* statements+=statement NEWLINE*)*
+//    : ((EMPTY_LINE)* SPACES? statement (EMPTY_LINE)*)*
+    : (NEWLINE* SPACES? statement SPACES? (NEWLINE | EOF))*
     ;
 
 blockWithBraces
-    : '{' SPACES? block  SPACES? '}'
+    : '{' SPACES? block SPACES? '}'
     ;
 
 statement
-    : function
-    | variable
+    : variable
     | expression
     | whileBlock
     | ifBlock
     | assignment
+    | function
     | returnBlock
     ;
 
 function
-    : 'fun' IDENTIFIER SPACES? '(' parameterNames? ')' SPACES? blockWithBraces
+    : 'fun' SPACES IDENTIFIER SPACES? '(' parameterNames? ')' SPACES? blockWithBraces
     ;
 
 variable
@@ -35,34 +36,34 @@ parameterNames
     ;
 
 whileBlock
-    : 'while' SPACES? '(' expression ')' SPACES? blockWithBraces
+    : 'while' SPACES? '(' SPACES? expression SPACES? ')' SPACES? blockWithBraces
     ;
 
 ifBlock
-    : 'if' SPACES? '(' expression ')' SPACES? blockWithBraces ('else' blockWithBraces)?
+    : 'if' SPACES? '(' SPACES? expression SPACES? ')' SPACES? blockWithBraces (SPACES? 'else' SPACES? blockWithBraces)?
     ;
 
 assignment
-    : IDENTIFIER '=' expression
+    : IDENTIFIER SPACES? '=' SPACES? expression
     ;
 
 expression
     : functionCall
     | '(' SPACES? expression SPACES? ')'
     // binariExpression
-    | expression SPACES? op+=('*' | '/' | '%') SPACES? expression
-    | expression SPACES? op+=('+' | '-') SPACES? expression
-    | expression SPACES? op+=('<' | '>' | '<=' | '>=') SPACES? expression
-    | expression SPACES? op+=('!=' | '==') SPACES? expression
-    | expression SPACES? op+='&&' SPACES? expression
-    | expression SPACES? op+='||' SPACES? expression
+    | expression SPACES? op=('*' | '/' | '%') SPACES? expression
+    | expression SPACES? op=('+' | '-') SPACES? expression
+    | expression SPACES? op=('<' | '>' | '<=' | '>=') SPACES? expression
+    | expression SPACES? op=('!=' | '==') SPACES? expression
+    | expression SPACES? op='&&' SPACES? expression
+    | expression SPACES? op='||' SPACES? expression
     //
     | IDENTIFIER
     | NUMBER_LITERAL
     ;
 
 functionCall
-    : IDENTIFIER '(' arguments? ')'
+    : IDENTIFIER SPACES? '(' SPACES? arguments? SPACES? ')'
     ;
 
 arguments
@@ -91,6 +92,11 @@ NEWLINE
 SPACES
     : ' '+
     ;
+
+//EMPTY_LINE
+////    : SPACES? COMMENT? (NEWLINE | EOF)
+//    : (NEWLINE | EOF)
+//    ;
 
 // https://en.cppreference.com/w/c/language/operator_precedence
 //BINART_OPERATORS_PRECEDENCE3
