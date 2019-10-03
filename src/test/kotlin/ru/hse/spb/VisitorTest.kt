@@ -3,27 +3,16 @@ package ru.hse.spb
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import ru.hse.spb.parser.FunCallLexer
 import ru.hse.spb.parser.FunCallParser
-import java.io.ByteArrayOutputStream
-import java.io.PrintStream
 import java.util.stream.Stream
 
 
-internal class VisitorTest {
-
-    private lateinit var myOut: ByteArrayOutputStream
-
-    @BeforeEach
-    fun setOut() {
-        myOut = ByteArrayOutputStream()
-        System.setOut(PrintStream(myOut))
-    }
+internal class VisitorTest : LanguageTest() {
 
     @Test
     fun shouldPrintOne() {
@@ -33,7 +22,7 @@ internal class VisitorTest {
 
         createParser(program).file().accept(Visitor())
 
-        assertEquals("1$LINE_SEPARATOR", myOut.toString())
+        assertEquals("1$lineBeaker", myOut.toString())
     }
 
     @ParameterizedTest
@@ -42,7 +31,7 @@ internal class VisitorTest {
 
         createParser(program).file().accept(Visitor())
 
-        assertEquals("$answer$LINE_SEPARATOR", myOut.toString())
+        assertEquals("$answer$lineBeaker", myOut.toString())
     }
 
     @ParameterizedTest
@@ -51,7 +40,7 @@ internal class VisitorTest {
 
         createParser(program).file().accept(Visitor())
 
-        assertEquals("$answer$LINE_SEPARATOR", myOut.toString())
+        assertEquals("$answer$lineBeaker", myOut.toString())
     }
 
     @Test
@@ -74,12 +63,10 @@ internal class VisitorTest {
         val ans = listOf(1 to 1, 2 to 2, 3 to 3, 4 to 5, 5 to 8)
         createParser(program).file().accept(Visitor())
 
-        assertEquals(ans.joinToString(LINE_SEPARATOR) { (a, b) -> "$a $b" } + LINE_SEPARATOR, myOut.toString())
+        assertEquals(ans.joinToString(lineBeaker) { (a, b) -> "$a $b" } + lineBeaker, myOut.toString())
     }
 
     companion object {
-
-        const val LINE_SEPARATOR = "\r\n"
 
         fun createParser(program: String): FunCallParser {
             val lexer = FunCallLexer(CharStreams.fromString(program))
@@ -126,7 +113,6 @@ internal class VisitorTest {
                         )
 
                 )
-
         @JvmStatic
         fun expressionTestProvider(): Stream<Arguments> =
                 Stream.of(

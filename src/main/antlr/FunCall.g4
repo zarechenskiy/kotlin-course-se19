@@ -6,11 +6,11 @@ file
 
 block
 //    : ((EMPTY_LINE)* SPACES? statement (EMPTY_LINE)*)*
-    : (NEWLINE* SPACES? statement SPACES? (NEWLINE | EOF))*
+    : (SPACES? statement SPACES? (NEWLINE | EOF))*
     ;
 
 blockWithBraces
-    : '{' SPACES? block SPACES? '}'
+    : '{' SPACES? NEWLINE? SPACES? block SPACES? '}' SPACES? NEWLINE?
     ;
 
 statement
@@ -40,7 +40,7 @@ whileBlock
     ;
 
 ifBlock
-    : 'if' SPACES? '(' SPACES? expression SPACES? ')' SPACES? blockWithBraces (SPACES? 'else' SPACES? blockWithBraces)?
+    : 'if' SPACES? '(' SPACES? expression SPACES? ')' SPACES? NEWLINE? blockWithBraces (SPACES? 'else' SPACES? NEWLINE? blockWithBraces)?
     ;
 
 assignment
@@ -86,7 +86,7 @@ NUMBER_LITERAL
     ;
 
 NEWLINE
-    : [\r\n]+
+    : ('\r\n'|'\n'|'\r')
     ;
 
 SPACES
