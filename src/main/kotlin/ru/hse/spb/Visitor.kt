@@ -16,14 +16,19 @@ class Visitor(private var currentScope: Scope = Scope.createRootScope()) : FunCa
 
     override fun visitBlock(ctx: FunCallParser.BlockContext) {
         for (statement in ctx.statement()) {
-            statement.accept(this)
+            try {
+                statement.accept(this)
+            } catch (e: Exception) {
+                val line = statement.start.line
+                throw InterpreterException(line, "Error on line $line:", e)
+            }
         }
     }
 
     override fun visitBlockWithBraces(ctx: FunCallParser.BlockWithBracesContext) {
         currentScope = Scope(currentScope)
         ctx.block().accept(this)
-        currentScope = currentScope.parent ?: error("unexpected throw out scope")
+        currentScope = currentScope.parent ?: error("Unexpected throw out scope")
     }
 
     override fun visitStatement(ctx: FunCallParser.StatementContext) {
@@ -38,7 +43,7 @@ class Visitor(private var currentScope: Scope = Scope.createRootScope()) : FunCa
                     ?: returnBlock()
                     ?: whileBlock()
                     ?: variable()
-                    ?: error("unknown statement")
+                    ?: error("Unknown statement")
         }
         type.accept(this)
     }
@@ -75,7 +80,7 @@ class Visitor(private var currentScope: Scope = Scope.createRootScope()) : FunCa
         val name = ctx.IDENTIFIER().text
         val value = calc(ctx.expression())
         if (!currentScope.assignVar(name, value)) {
-            error("variable $name is undefined")
+            error("Variable $name is undefined")
         }
 
     }
@@ -90,14 +95,14 @@ class Visitor(private var currentScope: Scope = Scope.createRootScope()) : FunCa
                     ?: op?.let { applyOperator(it, { this@Visitor.calc(expr[0]) }, { this@Visitor.calc(expr[1]) }) }
                     ?: expr.getOrNull(0)?.let { this@Visitor.calc(it) }
                     ?: functionCall()?.let { this@Visitor.calc(it) }
-                    ?: error("unknown expression")
+                    ?: error("Unknown expression")
         }
     }
 
     override fun visitFunctionCall(ctx: FunCallParser.FunctionCallContext) {
         val name = ctx.IDENTIFIER().text
         val args = ctx.arguments().expression().map { this.calc(it) }
-        returnValue = currentScope.getFun(name)?.apply(args) ?: error("function $name is undefined")
+        returnValue = currentScope.getFun(name)?.apply(args) ?: error("Function $name is undefined")
     }
 
     override fun visitReturnBlock(ctx: FunCallParser.ReturnBlockContext) {
@@ -122,7 +127,7 @@ class Visitor(private var currentScope: Scope = Scope.createRootScope()) : FunCa
             "!=" -> if (left() != right()) 1 else 0
             "&&" -> if (left() != 0 && right() != 0) 1 else 0
             "||" -> if (left() != 0 || right() != 0) 1 else 0
-            else -> error("unknown operator")
+            else -> error("Unknown operator")
         }
     }
 //    override fun visitFile(ctx: FileContext) {

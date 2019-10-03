@@ -4,6 +4,7 @@ import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -64,6 +65,26 @@ internal class VisitorTest : LanguageTest() {
         createParser(program).file().accept(Visitor())
 
         assertEquals(ans.joinToString(lineBeaker) { (a, b) -> "$a $b" } + lineBeaker, myOut.toString())
+    }
+
+    @Test
+    fun shouldThrowException() {
+        assertThrows<InterpreterException> {
+            Interpreter.run("fun } return 0 {")
+        }
+    }
+
+    @Test
+    fun shouldThrowExceptionWhenVarNotDefined() {
+        val program = """
+            |var a = 1
+            |print a + b
+        """.trimMargin()
+
+        val e = assertThrows<InterpreterException> {
+            Interpreter.run(program)
+        }
+        assertEquals(2, e.line)
     }
 
     companion object {
