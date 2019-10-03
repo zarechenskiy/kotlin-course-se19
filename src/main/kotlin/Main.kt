@@ -50,6 +50,12 @@ abstract class TagWithBlock(
 
     fun math(formula: String) = initTag(Math(formula), {})
 
+    fun customTag(
+        name: String,
+        parameter: Pair<String, String>,
+        init: CustomTag.() -> Unit
+    ) = initTag(CustomTag(name, parameter), init)
+
     override fun toOutputStream(stream: OutputStream, indent: String) {
         stream.write("$indent\\begin{$tagName}${System.lineSeparator()}".toByteArray())
         for (child in children) {
@@ -71,6 +77,22 @@ class Math(formula: String): Tag("math", formula) {
 
     override fun toOutputStream(stream: OutputStream, indent: String) {
         stream.write("$indent\$$arg\$${System.lineSeparator()}".toByteArray())
+    }
+}
+
+class CustomTag(
+    private val tagName: String,
+    private val parameter: Pair<String, String>
+): TagWithBlock(tagName) {
+
+    override fun toOutputStream(stream: OutputStream, indent: String) {
+        stream.write(
+            "$indent\\begin{$tagName}[${parameter.first}=${parameter.second}]${System.lineSeparator()}".toByteArray()
+        )
+        for (child in children) {
+            child.toOutputStream(stream, "$indent    ")
+        }
+        stream.write("$indent\\end{$tagName}${System.lineSeparator()}".toByteArray())
     }
 }
 
@@ -136,18 +158,24 @@ fun document(init: Document.() -> Unit): Document {
     return document
 }
 
-
-
 fun main() {
     val rows = arrayListOf("a", "b", "c")
     document {
-        usepackage("babel", "russian", "minted", "enumerate")
         documentClass("beamer")
-        frame("Best", "allowframebreaks" to "true") {
+        usepackage("babel", "russian" /* varargs */)
+        frame("frametitle", "arg1" to "arg2") {
             itemize {
                 for (row in rows) {
-                    item { +"$row" }
+                    item { + "$row text" }
                 }
+            }
+
+            // begin{pyglist}[language=kotlin]...\end{pyglist}
+            customTag("pyglist", "language" to "kotlin") {
+                +"""
+                |val a = 1
+                |
+                """
             }
         }
     }.toOutputStream(System.out)
