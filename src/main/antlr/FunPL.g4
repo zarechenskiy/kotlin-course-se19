@@ -1,13 +1,10 @@
 grammar FunPL;
 
-file : block {
-    import java.util.*;
-    HashMap<String, Integer> variables = new HashMap<>();
-};
+file : block;
 
 block : (statement)*;
 
-blockWithBraces : ('{' block '}')*;
+blockWithBraces : '{' block '}';
 
 statement
     : function (COMMENT)?
@@ -22,10 +19,7 @@ statement
 function : 'fun' IDENTIFIER '(' parameterNames ')' blockWithBraces;
 
 variable
-    : 'var' varName=IDENTIFIER ('=' exp=expression)? {
-        variables.put($varName.text, Integer.parseInt($exp.value));
-    }
-    ;
+    : 'var' varName=IDENTIFIER ('=' exp=expression)?;
 
 parameterNames : ((IDENTIFIER ',')* IDENTIFIER)?;
 
@@ -38,44 +32,44 @@ assignment : IDENTIFIER '=' expression;
 returnExp : 'return' expression;
 
 expression returns [int value]
-    : bin_exp=binaryExpression {$value = $bin_exp.value}
-    | nbin_exp=nonBinaryExpression {$value = $nbin_exp.value};
+    : bin_exp=binaryExpression
+    | nbin_exp=nonBinaryExpression;
 
 nonBinaryExpression returns [int value]
-    : functionCall {$value = 0}
-    | IDENTIFIER {$value = 0}
-    | LITERAL {$value = 0}
-    | '(' exp=expression ')' { $value = $exp.value };
+    : functionCall
+    | IDENTIFIER
+    | LITERAL
+    | '(' exp=expression ')';
 
 functionCall : IDENTIFIER '(' arguments ')';
 
 arguments : ((expression ',')* expression)?;
 
 binaryExpression returns [int value]
-    : or_exp=orExpression { $value = $or_exp.value }
+    : or_exp=orExpression
     ;
 orExpression returns [int value]
-    : and_exp=andExpression { $value = $and_exp.value }
-    | and_exp=andExpression '||' or_exp=orExpression { $value = 0 }
+    : and_exp=andExpression
+    | and_exp=andExpression '||' or_exp=orExpression
     ;
 
 andExpression returns [int value]
-    : eq_exp=eqExpression { $value = $eq_exp.value }
-    | eq_exp=eqExpression '&&' and_exp=andExpression { $value = $eq_exp.value && $and_exp.value }
+    : eq_exp=eqExpression
+    | eq_exp=eqExpression '&&' and_exp=andExpression
     ;
 
 eqExpression returns [int value]
-    : lm_exp=lessMoreExpression { $value = $lm_exp.value }
-    | lm_exp=lessMoreExpression '==' eq_exp=eqExpression { $value = 0 }
-    | lm_exp=lessMoreExpression '!=' eq_exp=eqExpression { $value = 0 }
+    : lm_exp=lessMoreExpression
+    | lm_exp=lessMoreExpression '==' eq_exp=eqExpression
+    | lm_exp=lessMoreExpression '!=' eq_exp=eqExpression
     ;
 
 lessMoreExpression returns [int value]
-    : add_exp=addExpression { $value = 0}
-    | addExpression '<' lessMoreExpression { $value = 0 }
-    | addExpression '<=' lessMoreExpression { $value = 0 }
-    | addExpression '>' lessMoreExpression { $value = 0 }
-    | addExpression '>=' lessMoreExpression { $value = 0 }
+    : add_exp=addExpression
+    | addExpression '<' lessMoreExpression
+    | addExpression '<=' lessMoreExpression
+    | addExpression '>' lessMoreExpression
+    | addExpression '>=' lessMoreExpression
     ;
 
 addExpression
