@@ -2,7 +2,7 @@ grammar FunPL;
 
 file : block;
 
-block : (statement)*;
+block : statement? (NEWLINE statement)* NEWLINE?;
 
 blockWithBraces : '{' block '}';
 
@@ -25,7 +25,7 @@ parameterNames : ((IDENTIFIER ',')* IDENTIFIER)?;
 
 whileExp : 'while' '(' expression ')' blockWithBraces;
 
-ifExp : 'if' '(' expression ')' blockWithBraces ('else' blockWithBraces)?;
+ifExp : 'if' '(' expression ')' branch1=blockWithBraces ('else' branch2=blockWithBraces)?;
 
 assignment : IDENTIFIER '=' expression;
 
@@ -49,40 +49,40 @@ binaryExpression returns [int value]
     : or_exp=orExpression
     ;
 orExpression returns [int value]
-    : and_exp=andExpression
-    | and_exp=andExpression '||' or_exp=orExpression
+    : and_exp0=andExpression
+    | and_exp1=andExpression '||' or_exp1=orExpression
     ;
 
 andExpression returns [int value]
-    : eq_exp=eqExpression
-    | eq_exp=eqExpression '&&' and_exp=andExpression
+    : eq_exp0=eqExpression
+    | eq_exp1=eqExpression '&&' and_exp1=andExpression
     ;
 
 eqExpression returns [int value]
-    : lm_exp=lessMoreExpression
-    | lm_exp=lessMoreExpression '==' eq_exp=eqExpression
-    | lm_exp=lessMoreExpression '!=' eq_exp=eqExpression
+    : lm_exp0=lessMoreExpression
+    | lm_exp1=lessMoreExpression '==' eq_exp1=eqExpression
+    | lm_exp2=lessMoreExpression '!=' eq_exp2=eqExpression
     ;
 
 lessMoreExpression returns [int value]
-    : add_exp=addExpression
-    | addExpression '<' lessMoreExpression
-    | addExpression '<=' lessMoreExpression
-    | addExpression '>' lessMoreExpression
-    | addExpression '>=' lessMoreExpression
+    : add_exp0=addExpression
+    | add_exp1=addExpression '<' lm_exp1=lessMoreExpression
+    | add_exp2=addExpression '<=' lm_exp2=lessMoreExpression
+    | add_exp3=addExpression '>' lm_exp3=lessMoreExpression
+    | add_exp4=addExpression '>=' lm_exp4=lessMoreExpression
     ;
 
 addExpression
-    : multExpression
-    | multExpression '+' addExpression
-    | multExpression '-' addExpression
+    : mult_exp0=multExpression
+    | mult_exp1=multExpression '+' add_exp1=addExpression
+    | mult_exp2=multExpression '-' add_exp2=addExpression
     ;
 
 multExpression
-    : nonBinaryExpression
-    | nonBinaryExpression '*' multExpression
-    | nonBinaryExpression '/' multExpression
-    | nonBinaryExpression '%' multExpression
+    : nb_exp0=nonBinaryExpression
+    | nb_exp1=nonBinaryExpression '*' mult_exp1=multExpression
+    | nb_exp2=nonBinaryExpression '/' mult_exp2=multExpression
+    | nb_exp3=nonBinaryExpression '%' mult_exp3=multExpression
     ;
     // MULT_EXPRESSION
 //    | ADD_EXPRESSION
@@ -95,6 +95,8 @@ IDENTIFIER : ('A'..'Z' | 'a'..'z') ('A'..'Z' | 'a'..'z' | '0'..'9')*;
 
 LITERAL : '0' | '-'? ('1'..'9') ('0'..'9')*;
 
-WS : (' ' | '\t' | '\r'| '\n') -> skip;
+WS : (' ' | '\t') -> skip;
 
 COMMENT : '//' ('A'..'Z' | 'a'..'z' | '0'..'9')*;
+
+NEWLINE : ('\r' | '\n')+;
