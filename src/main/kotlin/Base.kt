@@ -2,10 +2,16 @@ package ru.hse.spb
 
 import java.io.OutputStream
 
+/**
+ * Base abstraction for any LaTeX tag
+ * */
 interface Element {
     fun toOutputStream(stream: OutputStream, indent: String)
 }
 
+/**
+ * Base abstraction for text
+ * */
 class TextElement(private val text: String): Element {
 
     override fun toOutputStream(stream: OutputStream, indent: String) {
@@ -13,6 +19,9 @@ class TextElement(private val text: String): Element {
     }
 }
 
+/**
+ * Abstraction for any simple tag without body
+ * */
 abstract class Tag(
     private val tagName: String,
     protected val arg: String
@@ -26,6 +35,9 @@ abstract class Tag(
 @DslMarker
 annotation class TexTagMarker
 
+/**
+ * Abstraction for tag with complex nested body
+ * */
 @TexTagMarker
 abstract class TagWithBlock(
     private val tagName: String,
