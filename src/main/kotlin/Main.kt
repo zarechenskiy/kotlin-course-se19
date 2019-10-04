@@ -20,6 +20,32 @@ fun main() {
                 |
                 """
             }
+
+            flushleft {
+                math("a + b")
+
+                center {
+                    itemize {
+                        item {
+                            math("a + b = c")
+                        }
+                    }
+                }
+            }
+
+            flushright {
+                flushleft {
+                    flushright {
+                        itemize {
+                            item {
+                                customTag("tag", "x" to "y") {
+
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }.toOutputStream(System.out)
 }

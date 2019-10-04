@@ -40,15 +40,21 @@ abstract class TagWithBlock(
 
     fun frame(
         frameTitle: String,
-        attributes: Pair<String, String>,
+        attribute: Pair<String, String>,
         init: Frame.() -> Unit
-    ) = initTag(Frame("frame", frameTitle, attributes), init)
+    ) = initTag(Frame("frame", frameTitle, attribute), init)
 
     fun itemize(init: Itemize.() -> Unit) = initTag(Itemize(), init)
 
     fun enumerate(init: Enumerate.() -> Unit) = initTag(Enumerate(), init)
 
     fun math(formula: String) = initTag(Math(formula), {})
+
+    fun flushleft(init: FlushLeft.() -> Unit) = initTag(FlushLeft(), init)
+
+    fun flushright(init: FlushRight.() -> Unit) = initTag(FlushRight(), init)
+
+    fun center(init: Center.() -> Unit) = initTag(Center(), init)
 
     fun customTag(
         name: String,
