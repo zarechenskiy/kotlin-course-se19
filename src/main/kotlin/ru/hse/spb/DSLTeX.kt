@@ -2,6 +2,10 @@ package ru.hse.spb
 
 import java.io.*
 
+@DslMarker
+annotation class ElementMarker
+
+@ElementMarker
 interface Element {
     fun renderBegin(writer: Writer, indent: String)
     fun renderEnd(writer: Writer, indent: String) {}
@@ -155,16 +159,12 @@ class Document : BodyTag("document") {
     }
 }
 
-@DslMarker
-annotation class ItemMarker
-
 class DocumentClass : Command("documentClass")
 class UsePackage : Command("usepackage")
 class Frame : BodyTag("frame")
 class FrameTitle : Command("frametitle")
 class Itemize : ListTag("itemize")
 class Enumerate : ListTag("enumerate")
-@ItemMarker
 class Item : BodyTag("item") {
     override fun renderBegin(writer: Writer, indent: String) {
         writer.write("$indent\\item\n")
