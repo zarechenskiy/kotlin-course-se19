@@ -12,7 +12,7 @@ interface Element {
 }
 
 interface AttributedElement : Element {
-    fun renderAttributes(writer: Writer, indent: String)
+    fun renderAttributes() : String
 }
 
 class TextElement(private val text: String) : Element {
@@ -26,20 +26,23 @@ abstract class Command(private val name: String) : AttributedElement {
     var attributes: List<String> = mutableListOf()
 
     override fun renderBegin(writer: Writer, indent: String) {
-        writer.write("$indent\\$name${renderAttributes(writer, indent)}{$parameter}\n")
+        writer.write("$indent\\$name${renderAttributes()}{$parameter}\n")
     }
 
-    override fun renderAttributes(writer: Writer, indent: String) {
+    override fun renderAttributes() : String {
         if (attributes.isEmpty())
-            return
-        writer.write("[")
+            return ""
+        var rendered = ""
+        rendered += "["
         var left = attributes.size
-        for (attr in attributes)
-            writer.write(attr)
+        for (attr in attributes) {
+            rendered += attr
             left--
             if (left > 0)
-                writer.write(", ")
-        writer.write("]")
+                rendered += ", "
+        }
+        rendered += "]"
+        return rendered
     }
 }
 
@@ -47,37 +50,33 @@ abstract class Tag(protected val name: String) : AttributedElement {
     var attributes = hashMapOf<String, String>()
 
     override fun renderBegin(writer: Writer, indent: String) {
-        writer.write("$indent\\begin{$name}${renderAttributes(writer, indent)}\n")
+        writer.write("$indent\\begin{$name}${renderAttributes()}\n")
     }
 
-    override fun renderAttributes(writer: Writer, indent: String) {
+    override fun renderAttributes() : String {
         if (attributes.isEmpty())
-            return
-        writer.write("[")
+            return ""
+        var rendered = ""
+        rendered += "["
         var left = attributes.size
         for ((attr, value) in attributes) {
-            writer.write("$attr=$value")
+            rendered += "$attr=$value"
             left--
             if (left > 0)
-                writer.write(", ")
+                rendered += ", "
         }
-        writer.write("]")
+        rendered += "]"
+        return rendered
     }
 }
 
 abstract class TagWithText(name: String) : Tag(name) {
     protected val children = mutableListOf<Element>()
-    private var childAttributes = hashMapOf<String, String>()
 
-    private infix fun String.to(that: String) {
-        childAttributes[this] = that
-    }
-
-    protected fun <T: Element> initTag(tag: T, init: T.() -> Unit): T {
+    protected fun <T: Element> initTag(tag: T, init: T.() -> Unit, vararg args: Pair<String, String>): T {
         tag.init()
         if (tag is Tag)
-            tag.attributes = HashMap(childAttributes)
-            childAttributes = hashMapOf()
+            tag.attributes = hashMapOf(*args)
         children.add(tag)
         return tag
     }
@@ -94,7 +93,7 @@ abstract class TagWithText(name: String) : Tag(name) {
     }
 
     override fun renderEnd(writer: Writer, indent: String) {
-        writer.write("\\end{$name}\n")
+        writer.write("$indent\\end{$name}\n")
     }
 }
 
@@ -112,19 +111,19 @@ abstract class BodyTag(name: String) : TagWithText(name) {
         children.add(texPackage)
     }
 
-    fun frame(frameTitle: String? = null, init: Frame.() -> Unit) {
+    fun frame(vararg args: Pair<String, String>, frameTitle: String? = null, init: Frame.() -> Unit) {
         val frame = Frame()
         if (frameTitle != null) {
             val title = FrameTitle()
             title.parameter = frameTitle
             frame.children.add(title)
         }
-        initTag(frame, init)
+        initTag(frame, init, *args)
     }
 
-    fun itemize(init: Itemize.() -> Unit) = initTag(Itemize(), init)
+    fun itemize(vararg args: Pair<String, String>, init: Itemize.() -> Unit) = initTag(Itemize(), init, *args)
 
-    fun enumerate(init: Enumerate.() -> Unit) = initTag(Enumerate(), init)
+    fun enumerate(vararg args: Pair<String, String>, init: Enumerate.() -> Unit) = initTag(Enumerate(), init, *args)
 
     fun math(init: Math.() -> Unit) = initTag(Math(), init)
 
@@ -134,7 +133,8 @@ abstract class BodyTag(name: String) : TagWithText(name) {
 
     fun center(init: Center.() -> Unit) = initTag(Center(), init)
 
-    fun customTag(name: String, init: CustomTag.() -> Unit) = initTag(CustomTag(name), init)
+    fun customTag(vararg args: Pair<String, String>, name: String, init: CustomTag.() -> Unit) =
+        initTag(CustomTag(name), init, *args)
 }
 
 abstract class ListTag(name: String) : BodyTag(name) {
@@ -143,7 +143,9 @@ abstract class ListTag(name: String) : BodyTag(name) {
 
 class Document : BodyTag("document") {
     fun toOutputStream(stream: OutputStream) {
-        render(PrintWriter(stream), "")
+        val writer = PrintWriter(stream)
+        render(writer, "")
+        writer.flush()
     }
 
     override fun toString(): String {
@@ -152,13 +154,24 @@ class Document : BodyTag("document") {
         return writer.toString()
     }
 }
+
+@DslMarker
+annotation class ItemMarker
+
 class DocumentClass : Command("documentClass")
 class UsePackage : Command("usepackage")
 class Frame : BodyTag("frame")
 class FrameTitle : Command("frametitle")
 class Itemize : ListTag("itemize")
 class Enumerate : ListTag("enumerate")
-class Item : BodyTag("item")
+@ItemMarker
+class Item : BodyTag("item") {
+    override fun renderBegin(writer: Writer, indent: String) {
+        writer.write("$indent\\item\n")
+    }
+
+    override fun renderEnd(writer: Writer, indent: String) {}
+}
 class Math : BodyTag("gather*")
 class FlushLeft : BodyTag("flushleft")
 class FlushRight : BodyTag("flushright")
