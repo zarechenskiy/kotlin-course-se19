@@ -1,19 +1,28 @@
 package ru.hse.spb
 
-abstract class Property(name: String) : Elem(name) {
-
+interface Elem {
+    fun render(builder: StringBuilder, indent: String)
+    
 }
 
-abstract class Elem(name: String) {
-
+class TextElem(private val text: String) : Elem {
+    override fun render(builder: StringBuilder, indent: String) {
+        builder.append(indent)
+        builder.append(text)
+    }
 }
 
-abstract class Tag(beginMarker: String, endMarker: String)
+abstract class Property(private val name: String, vararg val params: String) : Elem {
+    override fun render(builder: StringBuilder, indent: String) {
+        for (param in params) {
+            builder.append(indent)
+            builder.append("\\$name{$param}\n")
+        }
+    }
+}
 
-class MathTag() : Tag("$", "$")
-
-abstract class BeginEndTag(name: String, params: Pair<String, String>?) : Tag("\\begin{$name}\n", "\\end{$name}\n") {
-    var children: MutableList<Tag> = mutableListOf()
+abstract class Tag(private val beginMarker: String, private val endMarker: String, private val separator: String = "\n") : Elem {
+    var children: MutableList<Elem> = mutableListOf()
 
     protected fun <T : Tag> initTag(tag: T, init: T.() -> Unit): T {
         tag.init()
@@ -21,10 +30,65 @@ abstract class BeginEndTag(name: String, params: Pair<String, String>?) : Tag("\
         return tag
     }
 
+    fun customTag(name: String, param: Pair<String, String>? = null, init: CustomTag.() -> Unit) {
+        initTag(CustomTag(name, param), init)
+    }
+
+    operator fun String.unaryPlus() {
+        children.add(TextElem(this))
+    }
+
+    override fun render(builder: StringBuilder, indent: String) {
+        builder.append(indent)
+        builder.append(beginMarker)
+        var beforeNextChild = ""
+        for (child in children) {
+            builder.append(beforeNextChild)
+            if (indent.endsWith("\n")) {
+                child.render(builder, indent)
+            } else {
+                child.render(builder, "")
+            }
+            beforeNextChild = separator
+        }
+        //builder.append(indent)
+        builder.append(endMarker)
+    }
+
+    override fun toString(): String {
+        val builder = StringBuilder()
+        render(builder, "")
+        return builder.toString()
+    }
+}
+
+class MathTag() : Tag("$$", "$$", separator="\n\n")
+
+abstract class BeginEndTag(name: String, params: Pair<String, String>? = null, separator: String ="\n") :
+        Tag("\\begin{$name}\n", "\n\\end{$name}", separator=separator) {
+
+
+    fun itemize(init: Itemize.() -> Unit) = initTag(Itemize(), init)
+
+    fun enumerate(init: Enumerate.() -> Unit) = initTag(Enumerate(), init)
+
+    fun item(init: Item.() -> Unit) = initTag(Item(), init)
+
+    fun align(params: Pair<String, String>? = null, init: Align.() -> Unit) = initTag(Align(params), init)
+
+    fun math(init: MathTag.() -> Unit) = initTag(MathTag(), init)
+
 }
 
 class Document(params: Pair<String, String>?) : BeginEndTag("document", params) {
-    var properties: MutableList<Property> = mutableListOf()
+    private var properties: MutableList<Property> = mutableListOf()
+
+    override fun render(builder: StringBuilder, indent: String) {
+        for (property in properties) {
+            property.render(builder, indent)
+        }
+        super.render(builder, indent)
+    }
 
     fun documentClass(name: String) {
         properties.add(DocumentClass(name))
@@ -38,35 +102,44 @@ class Document(params: Pair<String, String>?) : BeginEndTag("document", params) 
         initTag(Frame(frameTitle, param), init)
     }
 
-    fun itemize(init: Itemize.() -> Unit) {
-        initTag(Itemize(), init)
-    }
+}
 
-    fun enumerate(init: Enumerate.() -> Unit) {
-        initTag(Enumerate(), init)
-    }
-
-    fun align(params: Pair<String, String>?, init: Align.() -> Unit) {
-        initTag(Align(params), init)
-    }
+class Frame(title: String, arguments: Pair<String, String>?) : BeginEndTag("frame", arguments) {
 
 }
 
-class Frame(title: String, arguments: Pair<String, String>?) : BeginEndTag("frame", arguments)
+class Itemize() : BeginEndTag("itemize")
 
-class Itemize() : BeginEndTag("itemize", null)
+class Enumerate(): BeginEndTag("enumerate")
 
-class Enumerate(): BeginEndTag("enumerate", null)
+class Line(): Tag("", "", "&") {
+    constructor(vararg parts: String) : this() {
+        for (part in parts) {
+            children.add(TextElem(part))
+        }
+    }
 
-class Align(params: Pair<String, String>?) : BeginEndTag("align", params)
+    override fun render(builder: StringBuilder, indent: String) {
+        super.render(builder, "$indent    ")
+    }
+}
 
-class DocumentClass(name: String) : Property("documentclass") {
+class Item(): Tag("\\item ", "") {
+    override fun render(builder: StringBuilder, indent: String) {
+        super.render(builder, "$indent    ")
+    }
+}
+
+class Align(params: Pair<String, String>?) : BeginEndTag("align", params, separator = " \\\\\n") {
+    fun line(vararg parts: String) = children.add(Line(*parts))
 
 }
 
-class UsePackage(vararg packages: String) : Property("usepackage") {
+class CustomTag(name: String, params: Pair<String, String>?) : BeginEndTag(name, params)
 
-}
+class DocumentClass(name: String) : Property("documentclass", name)
+
+class UsePackage(vararg packages: String) : Property("usepackage", *packages)
 
 fun document(params: Pair<String, String>? = null, init: Document.() -> Unit): Document {
     val document = Document(params)

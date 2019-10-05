@@ -1,5 +1,7 @@
 package ru.hse.spb
 
+val rows = listOf("First", "Second", "And third")
+
 fun result() = document {
     documentClass("beamer")
     usepackage("babel", "russian" /* varargs */)
@@ -10,6 +12,11 @@ fun result() = document {
             }
         }
 
+        align {
+            line("1 + 2 ", "= 3")
+            line("567 + 1 ", "= 568")
+        }
+
         // begin{pyglist}[language=kotlin]...\end{pyglist}
         customTag(name = "pyglist", param="language" to "kotlin") {
             +"""
@@ -18,7 +25,7 @@ fun result() = document {
             """
         }
     }
-}.toOutputStream(System.out)
+}
 
 
 fun main() {
