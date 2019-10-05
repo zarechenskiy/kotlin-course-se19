@@ -28,7 +28,7 @@ class UsePackage(private val packages: Array<out String>) : Element {
 class TexDocument : CommonEnvironment("document") {
     private val header = arrayListOf<Element>()
 
-    fun documentclass(type: String) {
+    fun documentClass(type: String) {
         header.add(DocumentClass(type))
     }
 
@@ -49,19 +49,24 @@ class TexDocument : CommonEnvironment("document") {
 }
 
 
-class Itemize : CommonEnvironment("itemize")
+class Itemize : ItemizeEnvironment("itemize")
 class Enumerate : ItemizeEnvironment("enumerate")
 class Math : CommonEnvironment("math")
 class Align : CommonEnvironment("align")
-class Item(private val label: String?) : Element {
+class Item : CommonEnvironment("") {
     override fun toOutputStream(outputStream: OutputStream, indent: String) {
-        outputStream.write(("\\item" + if (label != null) "[$label]" else "").toByteArray())
+        outputStream.write(("$indent\\item\n").toByteArray())
+        for (c in children) {
+            c.toOutputStream(outputStream, "$indent    ")
+        }
+        outputStream.write("\n".toByteArray())
     }
 }
 
-class Frame(frameName: String) : CommonEnvironment("frame") {
+class Frame(frameName: String, args: Array<out Pair<String, String>>) : CommonEnvironment("frame") {
     init {
         bracesArgs.add(frameName)
+        args.forEach { (arg, value) -> this.squareArgs[arg] = value }
     }
 }
 
@@ -73,18 +78,21 @@ class Custom(name: String, squareArgs: Array<out Pair<String, String>>, braceArg
 }
 
 abstract class CommonEnvironment(name: String) : TexEnvironment(name) {
-    fun frame(frameName: String, init: Frame.() -> Unit) = initElement(Frame(frameName), init)
+    fun frame(frameTitle: String, vararg args: Pair<String, String>, init: Frame.() -> Unit) = initElement(Frame(frameTitle, args), init)
     fun itemize(init: Itemize.() -> Unit) = initElement(Itemize(), init)
     fun enumerate(init: Enumerate.() -> Unit) = initElement(Enumerate(), init)
     fun math(init: Math.() -> Unit) = initElement(Math(), init)
     fun align(init: Align.() -> Unit) = initElement(Align(), init)
-    fun custom(vararg args: Pair<String, String>, name: String, braceArgs: List<String>, init: Custom.() -> Unit) = initElement(Custom(name, args, braceArgs), init)
+
+    fun customTag(name: String,
+                  vararg args: Pair<String, String>,
+                  braceArgs: List<String> = emptyList(),
+                  init: Custom.() -> Unit
+    ) = initElement(Custom(name, args, braceArgs), init)
 }
 
 abstract class ItemizeEnvironment(name: String) : CommonEnvironment(name) {
-    fun item(label: String = "") {
-        children.add(Item(label))
-    }
+    fun item(init: Item.() -> Unit) = initElement(Item(), init)
 }
 
 open class TexEnvironment(private val name: String) : Element {
@@ -95,7 +103,7 @@ open class TexEnvironment(private val name: String) : Element {
     override fun toOutputStream(outputStream: OutputStream, indent: String) {
         outputStream.write("$indent\\begin{$name}${showBracesArgs()}${showSquareArgs()}\n".toByteArray())
         for (c in children) {
-            c.toOutputStream(outputStream, "$indent  ")
+            c.toOutputStream(outputStream, "$indent    ")
         }
         outputStream.write("$indent\\end{$name}\n".toByteArray())
     }
