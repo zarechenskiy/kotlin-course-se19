@@ -26,8 +26,16 @@ abstract class Tag(private val name: String) : Element {
         body.appendln(Math().apply(builder).render())
     }
 
-    fun alignment(builder: Alignment.() -> Unit) {
-        body.appendln(Alignment().apply(builder).render())
+    fun center(builder: Center.() -> Unit) {
+        body.appendln(Center().apply(builder).render())
+    }
+
+    fun flushLeft(builder: FlushLeft.() -> Unit) {
+        body.appendln(FlushLeft().apply(builder).render())
+    }
+
+    fun flushRight(builder: FlushRight.() -> Unit) {
+        body.appendln(FlushRight().apply(builder).render())
     }
 
     fun customTag(name: String, vararg parameters: Pair<String, String>, builder: CustomTag.() -> Unit) {
@@ -70,7 +78,9 @@ class TexList(isEnumerated: Boolean) :
 
 class Math : Tag("math")
 
-class Alignment : Tag("align*")
+class Center : Tag("center")
+class FlushLeft : Tag("flushleft")
+class FlushRight : Tag("flushright")
 
 @DslMarker
 annotation class ItemMarker

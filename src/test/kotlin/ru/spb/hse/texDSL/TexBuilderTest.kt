@@ -86,17 +86,29 @@ class TexBuilderTest {
             \begin{document}
             \begin{frame}
             \frametitle{title}
-            \begin{align*}
-            text
-            \end{align*}
+            \begin{center}
+            text1
+            \end{center}
+            \begin{flushleft}
+            text2
+            \end{flushleft}
+            \begin{flushright}
+            text3
+            \end{flushright}
             \end{frame}
             \end{document}
             """.trimIndent(),
 
             document {
                 frame("title") {
-                    alignment {
-                        + "text"
+                    center {
+                        + "text1"
+                    }
+                    flushLeft {
+                        + "text2"
+                    }
+                    flushRight {
+                        + "text3"
                     }
                 }
             }.render()
