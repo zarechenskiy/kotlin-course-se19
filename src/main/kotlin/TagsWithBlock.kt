@@ -4,12 +4,16 @@ import java.io.OutputStream
 
 class CustomTag(
     private val tagName: String,
-    private val attribute: Pair<String, String>
+    private val attributes: Map<String, String>
 ): TagWithBlock(tagName) {
 
     override fun toOutputStream(stream: OutputStream, indent: String) {
+        var params = attributes.keys.joinToString(separator = ",") { key -> "$key=${attributes[key]}" }
+        if (params.isNotEmpty()) {
+            params = "[$params]"
+        }
         stream.write(
-            "$indent\\begin{$tagName}[${attribute.first}=${attribute.second}]${System.lineSeparator()}".toByteArray()
+            "$indent\\begin{$tagName}$params${System.lineSeparator()}".toByteArray()
         )
         for (child in children) {
             child.toOutputStream(stream, "$indent    ")
@@ -31,7 +35,7 @@ class Item: TagWithBlock("item") {
 class Frame(
     tagName: String,
     frameTitle: String,
-    private val attribute: Pair<String, String>
+    private val attributes: Map<String, String>
 ) : TagWithBlock(tagName) {
 
     init {
@@ -39,7 +43,11 @@ class Frame(
     }
 
     override fun toOutputStream(stream: OutputStream, indent: String) {
-        stream.write("$indent\\begin{frame}[${attribute.first}=${attribute.second}]${System.lineSeparator()}".toByteArray())
+        var params = attributes.keys.joinToString(separator = ",") { key -> "$key=${attributes[key]}" }
+        if (params.isNotEmpty()) {
+            params = "[$params]"
+        }
+        stream.write("$indent\\begin{frame}$params${System.lineSeparator()}".toByteArray())
         for (child in children) {
             child.toOutputStream(stream, "$indent    ")
         }

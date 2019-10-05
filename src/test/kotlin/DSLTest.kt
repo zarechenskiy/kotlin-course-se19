@@ -44,7 +44,7 @@ class DSLTest {
             documentClass("doc class")
             usepackage()
             flushleft {
-                frame("title", "a" to "b") {
+                frame("title", "a" to "b", "c" to "d", "e" to "f") {
                     enumerate {
                         item {
                             math("F_n = F_{n-1} + F_{n-2}")
@@ -53,7 +53,7 @@ class DSLTest {
                     flushright {
                         itemize {
                             center {
-                                customTag("my_awesome tag", "c" to "d") {
+                                customTag("my_awesome tag", "c" to "d", "x" to "y", "time" to "10am") {
 
                                 }
                             }
@@ -73,7 +73,7 @@ class DSLTest {
             \begin{document}
                 \documentclass{doc class}
                 \begin{flushleft}
-                    \begin{frame}[a=b]
+                    \begin{frame}[a=b,c=d,e=f]
                         \frametitle{title}
                         \begin{enumerate}
                             \item
@@ -82,7 +82,7 @@ class DSLTest {
                         \begin{flushright}
                             \begin{itemize}
                                 \begin{center}
-                                    \begin{my_awesome tag}[c=d]
+                                    \begin{my_awesome tag}[c=d,x=y,time=10am]
                                     \end{my_awesome tag}
                                 \end{center}
                             \end{itemize}

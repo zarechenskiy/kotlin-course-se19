@@ -6,7 +6,7 @@ fun main() {
     document {
         documentClass("beamer")
         usepackage("babel", "russian" /* varargs */)
-        frame("frametitle", "arg1" to "arg2") {
+        frame("frametitle", "arg1" to "val1", "arg2" to "val2") {
             itemize {
                 for (row in rows) {
                     item { + "$row text" }
@@ -14,7 +14,7 @@ fun main() {
             }
 
             // begin{pyglist}[language=kotlin]...\end{pyglist}
-            customTag("pyglist", "language" to "kotlin") {
+            customTag("pyglist", "language" to "kotlin", "fontsize" to "11px", "align" to "auto") {
                 +"""
                 |val a = 1
                 |

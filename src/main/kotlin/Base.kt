@@ -52,9 +52,9 @@ abstract class TagWithBlock(
 
     fun frame(
         frameTitle: String,
-        attribute: Pair<String, String>,
+        vararg attributes: Pair<String, String>,
         init: Frame.() -> Unit
-    ) = initTag(Frame("frame", frameTitle, attribute), init)
+    ) = initTag(Frame("frame", frameTitle, attributes.toMap()), init)
 
     fun itemize(init: Itemize.() -> Unit) = initTag(Itemize(), init)
 
@@ -70,9 +70,9 @@ abstract class TagWithBlock(
 
     fun customTag(
         name: String,
-        parameter: Pair<String, String>,
+        vararg attributes: Pair<String, String>,
         init: CustomTag.() -> Unit
-    ) = initTag(CustomTag(name, parameter), init)
+    ) = initTag(CustomTag(name, attributes.toMap()), init)
 
     override fun toOutputStream(stream: OutputStream, indent: String) {
         stream.write("$indent\\begin{$tagName}${System.lineSeparator()}".toByteArray())
