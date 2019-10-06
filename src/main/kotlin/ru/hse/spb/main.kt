@@ -5,7 +5,7 @@ val rows = listOf("First", "Second", "And third")
 fun result() = document {
     documentClass("beamer")
     usepackage("babel", "russian" /* varargs */)
-    frame(frameTitle="frametitle", param="arg1" to "arg2") {
+    frame(frameTitle="Hello", param="arg1" to "arg2") {
         itemize {
             for (row in rows) {
                 item { + "$row text" }

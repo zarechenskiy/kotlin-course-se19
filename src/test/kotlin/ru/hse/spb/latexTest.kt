@@ -9,7 +9,7 @@ val withProperties = """
 \usepackage{babel}
 \usepackage{russian}
 \begin{document}
-\begin{frame}
+\begin{frame}\frametitle{Title}
 
 \end{frame}
 \end{document}
@@ -25,7 +25,7 @@ val itemize = """
 
 val withArgument = """
 \begin{document}
-\begin{frame}[arg1=arg2]
+\begin{frame}[arg1=arg2]\frametitle{frametitle}
 
 \end{frame}
 \end{document}
@@ -33,7 +33,7 @@ val withArgument = """
 
 val withFormula = """
 \begin{document}
-\begin{frame}
+\begin{frame}\frametitle{Title}
 ${'$'}x = 5${'$'}
 \end{frame}
 \end{document}
@@ -50,7 +50,7 @@ val example = """
 \usepackage{babel}
 \usepackage{russian}
 \begin{document}
-\begin{frame}[arg1=arg2]
+\begin{frame}[arg1=arg2]\frametitle{frametitle}
 \begin{itemize}
     \item 1 text
     \item 2 text

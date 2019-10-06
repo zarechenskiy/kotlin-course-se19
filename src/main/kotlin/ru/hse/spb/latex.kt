@@ -27,9 +27,9 @@ abstract class Property(private val name: String, vararg val params: String) : E
 annotation class LatexTagMarker
 
 @LatexTagMarker
-abstract class Tag(private val beginMarker: String,
-                   private val endMarker: String,
-                   private val separator: String = "\n") : Elem {
+abstract class Tag(protected var beginMarker: String,
+                   protected val endMarker: String,
+                   protected val separator: String = "\n") : Elem {
     var children: MutableList<Elem> = mutableListOf()
 
     protected fun <T : Tag> initTag(tag: T, init: T.() -> Unit): T {
@@ -119,7 +119,11 @@ class Document(params: Pair<String, String>?) : BeginEndTag("document", params) 
 
 }
 
-class Frame(title: String, arguments: Pair<String, String>?) : BeginEndTag("frame", arguments)
+class Frame(arguments: Pair<String, String>?) : BeginEndTag("frame", arguments) {
+    constructor(title: String, arguments: Pair<String, String>?) : this(arguments) {
+        beginMarker = beginMarker.substring(0, beginMarker.length - 1) + "\\frametitle{$title}\n"
+    }
+}
 
 class Itemize() : BeginEndTag("itemize") {
     fun item(init: Item.() -> Unit) = initTag(Item(), init)
