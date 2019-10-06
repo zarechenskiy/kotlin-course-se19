@@ -25,7 +25,7 @@ fun result() = document {
             """
         }
     }
-}
+}.toOutputStream(System.out)
 
 
 fun main() {
