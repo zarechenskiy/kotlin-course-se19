@@ -7,17 +7,19 @@ import java.io.PrintStream
 import java.lang.RuntimeException
 
 class FunVisitor(private val outputStream : PrintStream = System.out) : FunBaseVisitor<Any?>() {
-    private var blockEnv = BlockEnv()
+    private val blockEnv = BlockEnv()
+    var returnRegister: Any? = null
 
     override fun visitFile(ctx: FileContext) {
         ctx.block().accept(this)
     }
 
     override fun visitBlock(ctx: BlockContext) {
-        val oldEnv = blockEnv.deepCopy()
+        val oldVarsMap = blockEnv.deepCopyVarMap()
+        val oldFunctionsMap = blockEnv.deepCopyFunctionsMap()
 
         for (statement in ctx.statement()) {
-            if (blockEnv.returnRegister != null) {
+            if (returnRegister != null) {
                 break
             }
 
@@ -25,9 +27,13 @@ class FunVisitor(private val outputStream : PrintStream = System.out) : FunBaseV
         }
 
         val toDeleteVars = emptyList<String>().toMutableList()
-        blockEnv.varsMap.keys.forEach { if (it !in oldEnv.varsMap.keys) toDeleteVars += it }
-        toDeleteVars.forEach { blockEnv.varsMap.remove(it) }
-        blockEnv.functionsMap = oldEnv.functionsMap
+        val toDeleteFunctions = emptyList<String>().toMutableList()
+
+        blockEnv.deepCopyVarMap().keys.forEach { if (it !in oldVarsMap) toDeleteVars += it }
+        blockEnv.deepCopyFunctionsMap().keys.forEach { if (it !in oldFunctionsMap) toDeleteFunctions += it }
+
+        toDeleteVars.forEach { blockEnv.deleteVar(it) }
+        toDeleteFunctions.forEach { blockEnv.deleteFunction(it) }
     }
 
     override fun visitBlockWithBraces(ctx: BlockWithBracesContext) {
@@ -53,26 +59,21 @@ class FunVisitor(private val outputStream : PrintStream = System.out) : FunBaseV
     }
 
     override fun visitReturnRule(ctx: ReturnRuleContext) {
-        blockEnv.returnRegister = ctx.expression().accept(this)
+        returnRegister = ctx.expression().accept(this)
     }
 
     override fun visitAssignment(ctx: AssignmentContext) {
-        blockEnv.varsMap[ctx.IDENTIFIER().toString()] = ctx.expression().accept(this)
+        blockEnv.assignVar(ctx.IDENTIFIER().toString(), ctx.expression().accept(this))
     }
 
     override fun visitFunction(ctx: FunctionContext) {
         val fName = ctx.IDENTIFIER(0).toString()
-
-        if (blockEnv.functionsMap.containsKey(fName)) {
-            throw RuntimeException("Can't overload function $fName")
-        }
-
-        blockEnv.functionsMap[fName] = ctx
+        blockEnv.addFunction(fName, ctx)
     }
 
     override fun visitVariable(ctx: VariableContext) {
         val vName = ctx.IDENTIFIER().symbol.text
-        blockEnv.varsMap[vName] = if (ctx.childCount == 1) null else ctx.expression().accept(this)
+        blockEnv.assignVar(vName, if (ctx.childCount == 1) null else ctx.expression().accept(this))
     }
 
     override fun visitFunctionCall(ctx: FunctionCallContext): Any? {
@@ -81,38 +82,35 @@ class FunVisitor(private val outputStream : PrintStream = System.out) : FunBaseV
 
         if (fName == "println") {
             args.forEach {
-                outputStream.print(it)
-                outputStream.print(" ")
+                outputStream.print("$it ")
             }
             outputStream.println()
 
             return Unit
         }
 
-        val fCtx = blockEnv.functionsMap[fName]
-                ?: throw RuntimeException("No function with name $fName")
-
+        val fCtx = blockEnv.getFunction(fName)
         val paramNames = fCtx.parameters.map { it.text }
 
         if (paramNames.size != args.size) {
             throw RuntimeException("Wrong number of arguments for function $fName")
         }
 
-        val oldEnv = blockEnv.deepCopy()
-        paramNames.zip(args).forEach { blockEnv.varsMap[it.first] = it.second }
+        val oldVarMap = blockEnv.deepCopyVarMap()
+        paramNames.zip(args).forEach { blockEnv.assignVar(it.first, it.second) }
         fCtx.blockWithBraces().accept(this)
-        val res = blockEnv.returnRegister
 
-        blockEnv.returnRegister = null
         paramNames.forEach {
-            if (oldEnv.varsMap.containsKey(it)) {
-                blockEnv.varsMap[it] = oldEnv.varsMap[it]
+            if (it in oldVarMap) {
+                blockEnv.assignVar(it, oldVarMap[it])
             } else {
-                blockEnv.varsMap.remove(it)
+                blockEnv.deleteVar(it)
             }
         }
 
-        return res ?: 0
+        val ret = returnRegister
+        returnRegister = null
+        return ret ?: 0
     }
 
     override fun visitUnaryMinus(ctx: UnaryMinusContext): Any {
@@ -140,7 +138,7 @@ class FunVisitor(private val outputStream : PrintStream = System.out) : FunBaseV
             FunLexer.MULT -> left * right
             FunLexer.DIV -> left / right
             FunLexer.MOD -> left % right
-            else -> throw RuntimeException("Unknown operator for multiplication.")
+            else -> error("Unknown operator for multiplication.")
         }
     }
 
@@ -151,7 +149,7 @@ class FunVisitor(private val outputStream : PrintStream = System.out) : FunBaseV
         return when (ctx.operator.type) {
             FunLexer.MINUS -> left - right
             FunLexer.PLUS -> left + right
-            else -> throw RuntimeException("Unknown operator for addition.")
+            else -> error("Unknown operator for addition.")
         }
     }
 
@@ -162,7 +160,7 @@ class FunVisitor(private val outputStream : PrintStream = System.out) : FunBaseV
         return when (ctx.operator.type) {
             FunLexer.EQ -> left == right
             FunLexer.NEQ -> left != right
-            else -> throw RuntimeException("Unknown operator for equivalence.")
+            else -> error("Unknown operator for equivalence.")
         }
     }
 
@@ -182,7 +180,7 @@ class FunVisitor(private val outputStream : PrintStream = System.out) : FunBaseV
 
     override fun visitIdentExpr(ctx: IdentExprContext): Any {
         val varName = ctx.IDENTIFIER().toString()
-        return blockEnv.varsMap[varName] ?: throw RuntimeException("Unknown variable $varName.")
+        return blockEnv.getVar(varName)
     }
 
     override fun visitNumExpr(ctx: NumExprContext): Any {

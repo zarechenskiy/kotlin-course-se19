@@ -15,12 +15,12 @@ class TestSource {
         val bos = ByteArrayOutputStream()
         val ps = PrintStream(bos)
 
-        Interpreter.interpret(program, ps)
+        interpret(program, ps)
         assertEquals(expected, bos.toString().replace("\r\n", "\n").replace('\r', '\n'))
     }
 
     @Test
-    fun testInterpreter() {
+    fun testInterpreter1() {
         val program1 = """
             |fun kek(a, b, c) {
             |   a = a + b + c
@@ -42,7 +42,10 @@ class TestSource {
         """.trimMargin()
 
         checkInterpreter(program1, expected1)
+    }
 
+    @Test
+    fun testInterpreter2() {
         val program2 = """
             |fun fib(n) {
             |   if (n <= 1) {
@@ -69,7 +72,10 @@ class TestSource {
         """.trimMargin()
 
         checkInterpreter(program2, expected2)
+    }
 
+    @Test
+    fun testInterpreter3() {
         val program3 = """
             |fun foo(n) {
             |   fun bar(m) {
