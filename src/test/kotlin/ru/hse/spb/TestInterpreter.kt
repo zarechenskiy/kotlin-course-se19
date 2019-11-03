@@ -1,8 +1,10 @@
 package ru.hse.spb
 
-import org.junit.Assert
+import org.junit.Assert.assertEquals
 import org.junit.Test
-import java.lang.RuntimeException
+import java.io.ByteArrayOutputStream
+import java.io.PrintStream
+
 
 class TestInterpreter {
 
@@ -21,15 +23,15 @@ class TestInterpreter {
     @Test
     fun testEvaluateExpressions() {
         val literal: Expression = Literal(1)
-        Assert.assertEquals(1, evaluate(literal, State(null)))
+        assertEquals(1, evaluate(literal, State(null)))
 
         val identifier: Expression = Identifier("a")
         val state = State(null)
         state.registerVariable("a", 1)
-        Assert.assertEquals(1, evaluate(identifier, state))
+        assertEquals(1, evaluate(identifier, state))
 
         val binaryExpression: Expression = BinaryExpression(Literal(1), Literal(2), BinaryOperator.PLUS)
-        Assert.assertEquals(3, evaluate(binaryExpression, state))
+        assertEquals(3, evaluate(binaryExpression, state))
     }
 
     /*
@@ -49,7 +51,7 @@ class TestInterpreter {
                         Assignment("i", BinaryExpression(Identifier("i"), Literal(1), BinaryOperator.MINUS))))
         )
         evaluate(statement, state)
-        Assert.assertEquals(55, state.getVariable("s"))
+        assertEquals(55, state.getVariable("s"))
     }
 
     /*
@@ -64,7 +66,7 @@ class TestInterpreter {
                 listOf(Return(Identifier("x")))
         )))
         val statement = FunctionCall("f", listOf(Literal(1)))
-        Assert.assertEquals(1, evaluate(statement, state))
+        assertEquals(1, evaluate(statement, state))
     }
 
     /*
@@ -84,7 +86,7 @@ class TestInterpreter {
                                 FunctionCall("f", listOf(BinaryExpression(Identifier("x"), Literal(1), BinaryOperator.MINUS))),
                                 BinaryOperator.MULT)))))))))
         val statement = FunctionCall("f", listOf(Literal(5)))
-        Assert.assertEquals(120, evaluate(statement, state))
+        assertEquals(120, evaluate(statement, state))
     }
 
     @Test(expected = RuntimeException::class)
@@ -106,5 +108,14 @@ class TestInterpreter {
         state.registerVariable("x", 1)
     }
 
-
+    @Test
+    fun testPrintln() {
+        val state = State(null)
+        val statement = FunctionCall("println", listOf(Literal(1), Literal(2)))
+        val outContent = ByteArrayOutputStream()
+        System.setOut(PrintStream(outContent))
+        evaluate(statement, state)
+        assertEquals("1 2\n", outContent.toString())
+        System.setOut(System.out)
+    }
 }

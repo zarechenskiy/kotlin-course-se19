@@ -54,6 +54,9 @@ fun evaluate(statement: Statement, state: State): Int? {
         is Return -> {
             return evaluate(statement.expression, state)
         }
+        is Expression -> {
+            return evaluate(statement, state)
+        }
     }
     return null
 }
@@ -62,7 +65,7 @@ fun evaluate(expression: Expression, state: State): Int {
     when (expression) {
         is FunctionCall -> {
             if (expression.identifier == "println") {
-                println(expression.parameters)
+                println(expression.parameters.map { evaluate(it, state).toString() }.joinToString(" "))
                 return 0
             } else {
                 val function = state.getFunction(expression.identifier)
@@ -70,7 +73,7 @@ fun evaluate(expression: Expression, state: State): Int {
                     throw RuntimeException("Wrong number of arguments in function ${function.identifier} call")
                 }
                 val newState = state.enter()
-                function.parameters.zip(expression.parameters).map { (param, expr) -> newState.registerVariable(param, evaluate(expr, state))}
+                function.parameters.zip(expression.parameters).map { (param, expr) -> newState.registerVariable(param, evaluate(expr, state)) }
                 return evaluate(function.body, newState) ?: 0
             }
         }
