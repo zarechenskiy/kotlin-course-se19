@@ -1,13 +1,12 @@
 package ru.hse.spb
 
-fun getGreeting(): String {
-    val words = mutableListOf<String>()
-    words.add("Hello,")
-    words.add("world!")
-
-    return words.joinToString(separator = " ")
-}
+import org.antlr.v4.runtime.CharStreams
+import org.antlr.v4.runtime.CommonTokenStream
+import ru.hse.spb.parser.LangLexer
+import ru.hse.spb.parser.LangParser
 
 fun main(args: Array<String>) {
-    println(getGreeting())
+    val reader = CharStreams.fromFileName(args[0], Charsets.UTF_8)
+    val parser = LangParser(CommonTokenStream(LangLexer(reader)))
+    evaluate(BlockVisitor().visitFile(parser.file()), State(null))
 }
