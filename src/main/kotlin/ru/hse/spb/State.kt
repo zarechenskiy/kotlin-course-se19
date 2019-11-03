@@ -6,7 +6,15 @@ class State(private val parent: State?) {
     private val variables: MutableMap<String, Int?> = mutableMapOf()
     private val functions: MutableMap<String, Function> = mutableMapOf()
 
-    fun setVariable(identifier: String, value: Int?) {
+    fun registerVariable(identifier: String, value: Int?) {
+        if (identifier in variables) {
+            throw RuntimeException("Multiple definition of variable $identifier")
+        } else {
+            variables[identifier] = value;
+        }
+    }
+
+    fun setVariable(identifier: String, value: Int) {
         when {
             identifier in variables -> variables[identifier] = value
             parent != null -> parent.setVariable(identifier, value)
@@ -24,7 +32,7 @@ class State(private val parent: State?) {
                 else -> throw RuntimeException("Unknown variable $identifier")
             }
 
-    fun setFunction(identifier: String, function: Function) {
+    fun registerFunction(identifier: String, function: Function) {
         functions[identifier] = function
     }
 
@@ -36,6 +44,4 @@ class State(private val parent: State?) {
             }
 
     fun enter(): State = State(this)
-
-    fun leave(): State = parent!!
 }

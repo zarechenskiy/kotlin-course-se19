@@ -15,14 +15,14 @@ fun evaluate(block: Block, state: State): Int? {
 fun evaluate(statement: Statement, state: State): Int? {
     when (statement) {
         is Function -> {
-            state.setFunction(statement.identifier, statement)
+            state.registerFunction(statement.identifier, statement)
             return null
         }
         is Variable -> {
             if (statement.value != null) {
-                state.setVariable(statement.identifier, evaluate(statement.value, state))
+                state.registerVariable(statement.identifier, evaluate(statement.value, state))
             } else {
-                state.setVariable(statement.identifier, null)
+                state.registerVariable(statement.identifier, null)
             }
             return null
         }
@@ -70,7 +70,7 @@ fun evaluate(expression: Expression, state: State): Int {
                     throw RuntimeException("Wrong number of arguments in function ${function.identifier} call")
                 }
                 val newState = state.enter()
-                function.parameters.zip(expression.parameters).map { (param, expr) -> newState.setVariable(param, evaluate(expr, state))}
+                function.parameters.zip(expression.parameters).map { (param, expr) -> newState.registerVariable(param, evaluate(expr, state))}
                 return evaluate(function.body, newState) ?: 0
             }
         }

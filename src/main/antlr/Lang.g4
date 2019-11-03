@@ -56,7 +56,7 @@ binaryLessExpression:  single=binaryPlusExpression
 
 // LeftA
 binaryPlusExpression:  single=binaryMultExpression
-                   | l=binaryPlusExpression op=(PLUS |MINUS)       r=binaryMultExpression;
+                   | l=binaryPlusExpression op=(PLUS | MINUS)      r=binaryMultExpression;
 
 // LeftA
 binaryMultExpression:  single=nonBinaryExpression

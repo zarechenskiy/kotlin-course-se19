@@ -45,6 +45,9 @@ class StatementVisitor : LangBaseVisitor<Statement>() {
 
     // if_: 'if' '(' expression ')' blockWithBraces ('else' blockWithBraces)?
     override fun visitIf_(ctx: LangParser.If_Context): Statement {
+        if (ctx.elseBody == null) {
+            return If(ExpressionVisitor().visitExpression(ctx.expression()), BlockVisitor().visitBlockWithBraces(ctx.thenBody), Block(emptyList()))
+        }
         return If(ExpressionVisitor().visitExpression(ctx.expression()), BlockVisitor().visitBlockWithBraces(ctx.thenBody), BlockVisitor().visitBlockWithBraces(ctx.elseBody))
     }
 
@@ -74,6 +77,15 @@ class ExpressionVisitor : LangBaseVisitor<Expression>() {
         return Literal(ctx.LITERAL().text.toInt())
     }
 
+    override fun visitNonBinaryExpression(ctx: LangParser.NonBinaryExpressionContext): Expression {
+        return when {
+            ctx.functionCall() != null -> ExpressionVisitor().visitFunctionCall(ctx.functionCall())
+            ctx.identifier() != null -> ExpressionVisitor().visitIdentifier(ctx.identifier())
+            ctx.literal() != null -> ExpressionVisitor().visitLiteral(ctx.literal())
+            else -> ExpressionVisitor().visitExpression(ctx.expression())
+        }
+    }
+
     override fun visitBinaryOrExpression(ctx: LangParser.BinaryOrExpressionContext): Expression {
         return if (ctx.op != null) {
             BinaryExpression(ExpressionVisitor().visitBinaryOrExpression(ctx.l), ExpressionVisitor().visitBinaryAndExpression(ctx.r), BinaryOperator.OR)
@@ -93,9 +105,9 @@ class ExpressionVisitor : LangBaseVisitor<Expression>() {
     override fun visitBinaryEqualExpression(ctx: LangParser.BinaryEqualExpressionContext): Expression {
         return if (ctx.op != null) {
             BinaryExpression(ExpressionVisitor().visitBinaryLessExpression(ctx.l), ExpressionVisitor().visitBinaryLessExpression(ctx.r),
-                    when (ctx.op.tokenIndex) {
-                        LangLexer.EQ  -> BinaryOperator.EQ
-                        LangLexer.NEQ -> BinaryOperator.NEQ
+                    when (ctx.op.text) {
+                        "==" -> BinaryOperator.EQ
+                        "!=" -> BinaryOperator.NEQ
                         else -> throw RuntimeException("Invalid operator $ctx.op")
                     }
             )
@@ -107,11 +119,11 @@ class ExpressionVisitor : LangBaseVisitor<Expression>() {
     override fun visitBinaryLessExpression(ctx: LangParser.BinaryLessExpressionContext): Expression {
         return if (ctx.op != null) {
             BinaryExpression(ExpressionVisitor().visitBinaryPlusExpression(ctx.l), ExpressionVisitor().visitBinaryPlusExpression(ctx.r),
-                    when (ctx.op.tokenIndex) {
-                        LangLexer.LE -> BinaryOperator.LE
-                        LangLexer.GE -> BinaryOperator.GE
-                        LangLexer.LT -> BinaryOperator.LT
-                        LangLexer.GT -> BinaryOperator.GT
+                    when (ctx.op.text) {
+                        "<=" -> BinaryOperator.LE
+                        ">=" -> BinaryOperator.GE
+                        "<"  -> BinaryOperator.LT
+                        ">"  -> BinaryOperator.GT
                         else -> throw RuntimeException("Invalid operator $ctx.op")
                     }
             )
@@ -123,9 +135,9 @@ class ExpressionVisitor : LangBaseVisitor<Expression>() {
     override fun visitBinaryPlusExpression(ctx: LangParser.BinaryPlusExpressionContext): Expression {
         return if (ctx.op != null) {
             BinaryExpression(ExpressionVisitor().visitBinaryPlusExpression(ctx.l), ExpressionVisitor().visitBinaryMultExpression(ctx.r),
-                    when (ctx.op.tokenIndex) {
-                        LangLexer.PLUS  -> BinaryOperator.PLUS
-                        LangLexer.MINUS -> BinaryOperator.MINUS
+                    when (ctx.op.text) {
+                        "+" -> BinaryOperator.PLUS
+                        "-" -> BinaryOperator.MINUS
                         else -> throw RuntimeException("Invalid operator $ctx.op")
                     }
             )
@@ -137,10 +149,10 @@ class ExpressionVisitor : LangBaseVisitor<Expression>() {
     override fun visitBinaryMultExpression(ctx: LangParser.BinaryMultExpressionContext): Expression {
         return if (ctx.op != null) {
             BinaryExpression(ExpressionVisitor().visitBinaryMultExpression(ctx.l), ExpressionVisitor().visitNonBinaryExpression(ctx.r),
-                    when (ctx.op.tokenIndex) {
-                        LangLexer.MULT -> BinaryOperator.MULT
-                        LangLexer.DIV  -> BinaryOperator.DIV
-                        LangLexer.MOD  -> BinaryOperator.MOD
+                    when (ctx.op.text) {
+                        "*" -> BinaryOperator.MULT
+                        "/" -> BinaryOperator.DIV
+                        "%" -> BinaryOperator.MOD
                         else -> throw RuntimeException("Invalid operator $ctx.op")
                     }
             )

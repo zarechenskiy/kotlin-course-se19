@@ -1,0 +1,9 @@
+fun foo(n) {
+    fun bar(m) {
+        return m + n
+    }
+
+    return bar(1)
+}
+
+return foo(41) // returns 42

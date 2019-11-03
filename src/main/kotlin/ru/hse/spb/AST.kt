@@ -1,7 +1,15 @@
 package ru.hse.spb
 
 /* block: (statement)* */
-class Block(val body: List<Statement>)
+class Block(val body: List<Statement>) {
+    override fun equals(other: Any?): Boolean {
+        return if (other is Block) {
+            body == other.body
+        } else {
+            false
+        }
+    }
+}
 
 /* statement: function | variable | expression | while | if | assignment | return */
 sealed class Statement
