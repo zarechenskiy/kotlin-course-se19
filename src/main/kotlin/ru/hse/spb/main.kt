@@ -7,6 +7,8 @@ import ru.hse.spb.parser.MyLangParser
 
 fun main(args: Array<String>) {
     for (path in args) {
-        MyLangVisitor().visitLFile(MyLangParser(BufferedTokenStream(MyLangLexer(CharStreams.fromFileName(path)))).lFile())
+        val lexedProgram = MyLangLexer(CharStreams.fromFileName(path))
+        val parsedProgram = MyLangParser(BufferedTokenStream(lexedProgram))
+        MyLangVisitor().visitLFile(parsedProgram.lFile())
     }
 }

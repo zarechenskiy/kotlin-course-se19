@@ -47,7 +47,7 @@ data class Scope(val stack: Stack<Frame> = Stack<Frame>().apply { push(Frame()) 
         return null
     }
 
-    fun <T> withFrame(body: () -> T): T {
+    inline fun <T> withFrame(body: () -> T): T {
         stack.push(Frame())
         return try {
             body()
@@ -55,5 +55,4 @@ data class Scope(val stack: Stack<Frame> = Stack<Frame>().apply { push(Frame()) 
             stack.pop()
         }
     }
-
 }

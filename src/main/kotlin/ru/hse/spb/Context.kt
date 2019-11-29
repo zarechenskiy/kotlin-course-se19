@@ -1,14 +1,14 @@
 package ru.hse.spb
 
-data class Context(val value: Any?) {
+class Context(val value: Any?) {
     fun toInt(): Int {
         require(value is Int) { "Value is not of Integer type" }
-        return value as Int
+        return value
     }
 
     fun toBool(): Boolean {
         require(value is Boolean) { "Value is not of Boolean type" }
-        return value as Boolean
+        return value
     }
 
     companion object {
