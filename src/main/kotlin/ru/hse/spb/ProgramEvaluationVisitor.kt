@@ -3,7 +3,6 @@ package ru.hse.spb
 import org.antlr.v4.runtime.ParserRuleContext
 import ru.hse.spb.parser.FunBaseVisitor
 import ru.hse.spb.parser.FunParser.*
-import java.lang.reflect.AnnotatedTypeVariable
 
 class ProgramEvaluationVisitor(private var scope: Scope) : FunBaseVisitor<Int?>() {
     private var returning: Boolean = false
