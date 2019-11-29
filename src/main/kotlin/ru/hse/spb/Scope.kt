@@ -4,7 +4,7 @@ import org.antlr.v4.runtime.ParserRuleContext
 
 typealias TFunction = (List<Int?>) -> Int?
 
-class Scope(val parentScope: Scope? = null) {
+class Scope(private val parentScope: Scope? = null) {
     private val variables = mutableMapOf<String, Int?>()
     private val functions = mutableMapOf<String, TFunction>()
 
@@ -30,7 +30,7 @@ class Scope(val parentScope: Scope? = null) {
     }
 
     fun addVariable(identifier: String, value: Int?, ctx: ParserRuleContext) {
-        if (variables.containsKey(identifier)) {
+        if (identifier in variables) {
             throw RuntimeException("Line ${ctx.start.line}: duplicate variable definition.")
         }
 

@@ -3,6 +3,7 @@ package ru.hse.spb
 import org.antlr.v4.runtime.ParserRuleContext
 import ru.hse.spb.parser.FunBaseVisitor
 import ru.hse.spb.parser.FunParser.*
+import java.lang.reflect.AnnotatedTypeVariable
 
 class ProgramEvaluationVisitor(private var scope: Scope) : FunBaseVisitor<Int?>() {
     private var returning: Boolean = false
@@ -23,10 +24,9 @@ class ProgramEvaluationVisitor(private var scope: Scope) : FunBaseVisitor<Int?>(
     }
 
     override fun visitBlockWithBraces(ctx: BlockWithBracesContext): Int? {
-        val oldScope = scope
-        scope = Scope(scope)
-        visit(ctx.block())
-        scope = oldScope
+        visitInnerScope {
+            visit(ctx.block())
+        }
         return null
     }
 
@@ -66,14 +66,12 @@ class ProgramEvaluationVisitor(private var scope: Scope) : FunBaseVisitor<Int?>(
                 throw RuntimeException("Line ${ctx.start.line}: invalid parameters number.")
             }
 
-            val oldScope = scope
-            scope = Scope(scope)
-
-            for (i in 0..argumentNames.lastIndex) {
-                scope.addVariable(argumentNames[i], args[i], ctx)
+            visitInnerScope {
+                for (i in 0..argumentNames.lastIndex) {
+                    scope.addVariable(argumentNames[i], args[i], ctx)
+                }
+                visit(ctx.blockWithBraces())
             }
-            visit(ctx.blockWithBraces())
-            scope = oldScope
 
             returning = false
             returnValue ?: 0
@@ -187,6 +185,13 @@ class ProgramEvaluationVisitor(private var scope: Scope) : FunBaseVisitor<Int?>(
                 evaluate(ctx.multiplicatingExpression()),
                 ctx
         )
+    }
+
+    private fun visitInnerScope(visitFunction: () -> Unit) {
+        val oldScope = scope
+        scope = Scope(scope)
+        visitFunction()
+        scope = oldScope
     }
 
     private fun evaluate(ctx: ParserRuleContext): Int {

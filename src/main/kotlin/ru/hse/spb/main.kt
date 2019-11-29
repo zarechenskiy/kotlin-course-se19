@@ -7,7 +7,9 @@ import ru.hse.spb.parser.FunLexer
 import ru.hse.spb.parser.FunParser
 
 fun main(args: Array<String>) {
-    checkArgs(args)
+    if (!checkArgs(args)) {
+        return
+    }
 
     val lexer = FunLexer(CharStreams.fromFileName(args[0]))
     val parser = FunParser(CommonTokenStream(lexer))
@@ -23,11 +25,14 @@ fun main(args: Array<String>) {
     interpreter.visit(file)
 }
 
-private fun checkArgs(args: Array<String>) {
+private fun checkArgs(args: Array<String>): Boolean {
     if (args.isEmpty()) {
         println("Path to file expected.")
+        return false
     }
     if (args.size > 1) {
         println("Unexpected argument.")
+        return false
     }
+    return true
 }
