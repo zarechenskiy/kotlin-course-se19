@@ -7,14 +7,14 @@ import ru.hse.spb.parser.LangParser
  * including variables and functions addresses,
  * current scope and names of entities
  * */
-data class ExecutionContext(
-    val addressScope: MutableMap<Int, Int> = HashMap(),
+class ExecutionContext(
+    private val addressScope: MutableMap<Int, Int> = HashMap(),
     val varAddresses: MutableMap<String, Int> = HashMap(),
     val funAddresses: MutableMap<String, Int> = HashMap(),
     val varValues: MutableMap<Int, Int> = HashMap(),
     val funDefinition: MutableMap<Int, LangParser.FunctionContext> = HashMap(),
     var resultValue: Int? = null,
-    var scopeId: Int = 0
+    private var scopeId: Int = 0
 ) {
     init {
         scopeId = currentScopeId++
