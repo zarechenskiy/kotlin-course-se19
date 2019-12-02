@@ -63,7 +63,7 @@ class StatementVisitor(private var context: ExecutionContext = ExecutionContext(
         check(!(name == null || ctx.expression() == null)) {
             "Parsing error at line: ${ctx?.start?.line}"
         }
-        check(context.varAddresses.containsKey(name)) {
+        check(name in context.varAddresses) {
             "Can not set value to the undefined variable $name"
         }
         context.varValues[context.varAddresses[name]!!] = ctx.expression().accept(ExpressionVisitor(context))
