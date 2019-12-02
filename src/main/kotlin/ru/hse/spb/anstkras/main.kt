@@ -33,10 +33,7 @@ fun runProgram(program: String) {
 class StatementsEvaluationVisitor : FunInterpreterBaseVisitor<Int>() {
 
     override fun visitFile(ctx: FunInterpreterParser.FileContext): Int {
-        frameContext.addNewFrame()
-        val result = ctx.block().accept(this)
-        frameContext.removeFrame()
-        return result
+        return innerFrame { ctx.block().accept(this) }
     }
 
     override fun visitBlock(ctx: FunInterpreterParser.BlockContext): Int {
@@ -182,14 +179,13 @@ class StatementsEvaluationVisitor : FunInterpreterBaseVisitor<Int>() {
             println(arguments.joinToString(" "))
             return 0
         }
-        frameContext.addNewFrame()
-        for (i in 0 until arguments.size) {
-            frameContext.addVar(frameContext.findArgs(functionName)[i], arguments[i])
+        return innerFrame {
+            for (i in arguments.indices) {
+                frameContext.addVar(frameContext.findArgs(functionName)[i], arguments[i])
+            }
+            val function = frameContext.findFunction(functionName)
+            function()
         }
-        val function = frameContext.findFunction(functionName)
-        val res = function()
-        frameContext.removeFrame()
-        return res
     }
 }
 
@@ -201,3 +197,10 @@ private fun FunInterpreterParser.FactorContext.variableName() = IDENTIFIER()?.te
 private fun FunInterpreterParser.FactorContext.literalValue() = literal()?.text?.toIntOrNull()
 private fun Boolean.toInt() = if (this) 1 else 0
 private fun Int.toBoolean() = this != 0
+
+private inline fun <T> innerFrame(body: () -> T): T {
+    frameContext.addNewFrame()
+    val result = body()
+    frameContext.removeFrame()
+    return result
+}

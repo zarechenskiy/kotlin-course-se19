@@ -3,8 +3,10 @@ package ru.hse.spb.anstkras
 class FrameContext {
     private val frames = mutableListOf<Frame>()
 
+    private val lastFrame get() = frames.last()
+
     fun setShouldReturn() {
-        frames.last().shouldReturn = true
+        lastFrame.shouldReturn = true
     }
 
     fun addNewFrame() {
@@ -12,63 +14,63 @@ class FrameContext {
     }
 
     fun removeFrame() {
-        frames.removeAt(frames.size - 1)
+        frames.removeAt(frames.lastIndex)
     }
 
     fun addVar(varName: String, value: Int) {
-        if (frames.last().vars.containsKey(varName)) {
+        if (varName in lastFrame.vars) {
             throw IllegalStateException("$varName already defined in this block")
         }
-        frames.last().vars[varName] = value
+        lastFrame.vars[varName] = value
     }
 
     fun findVar(varName: String): Int {
-        for (i in frames.size - 1 downTo 0) {
-            if (frames[i].vars.containsKey(varName)) {
-                return frames[i].vars[varName]!!
+        for (frame in frames.asReversed()) {
+            if (varName in frame.vars) {
+                return frame.vars[varName]!!
             }
         }
         throw IllegalStateException("$varName was not defined")
     }
 
     fun addFunction(funName: String, value: () -> Int) {
-        if (frames.last().functions.containsKey(funName)) {
+        if (funName in lastFrame.functions) {
             throw IllegalStateException("$funName already defined in this block")
         }
-        frames.last().functions[funName] = value
+        lastFrame.functions[funName] = value
     }
 
     fun findFunction(funName: String): () -> Int {
-        for (i in frames.size - 1 downTo 0) {
-            if (frames[i].functions.containsKey(funName)) {
-                return frames[i].functions[funName]!!
+        for (frame in frames.asReversed()) {
+            if (funName in frame.functions) {
+                return frame.functions[funName]!!
             }
         }
         throw IllegalStateException("$funName was not defined")
     }
 
     fun addArgs(funName: String, args: List<String>) {
-        if (frames.last().functionsArgs.containsKey(funName)) {
+        if (funName in lastFrame.functionsArgs) {
             throw IllegalStateException("$funName already defined in this block")
         }
-        frames.last().functionsArgs[funName] = args
+        lastFrame.functionsArgs[funName] = args
     }
 
     fun findArgs(funName: String): List<String> {
-        for (i in frames.size - 1 downTo 0) {
-            if (frames[i].functionsArgs.containsKey(funName)) {
-                return frames[i].functionsArgs[funName]!!
+        for (frame in frames.asReversed()) {
+            if (funName in frame.functionsArgs) {
+                return frame.functionsArgs[funName]!!
             }
         }
         throw IllegalStateException("$funName was not defined")
     }
 
-    fun shouldReturn(): Boolean = frames.last().shouldReturn
+    fun shouldReturn(): Boolean = lastFrame.shouldReturn
 
     fun changeVar(varName: String, res: Int) {
-        for (i in frames.size - 1 downTo 0) {
-            if (frames[i].vars.containsKey(varName)) {
-                frames[i].vars[varName] = res
+        for (frame in frames.asReversed()) {
+            if (varName in frame.vars) {
+                frame.vars[varName] = res
             }
         }
     }
