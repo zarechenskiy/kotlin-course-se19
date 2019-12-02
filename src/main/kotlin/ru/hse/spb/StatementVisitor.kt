@@ -13,11 +13,7 @@ class StatementVisitor(private var context: ExecutionContext = ExecutionContext(
     /**
      * Chooses the type of statement and visit it
      * */
-    override fun visitStatement(ctx: LangParser.StatementContext?): Void? {
-        if (ctx == null) {
-            return null
-        }
-
+    override fun visitStatement(ctx: LangParser.StatementContext): Void? {
         when {
             ctx.return_expr() != null -> {
                 context.resultValue = ctx.return_expr()
@@ -39,8 +35,8 @@ class StatementVisitor(private var context: ExecutionContext = ExecutionContext(
      * Process of function declaration and checks all conditions
      * which should be satisfied
      * */
-    override fun visitFunction(ctx: LangParser.FunctionContext?): Void? {
-        val functionName = ctx!!.IDENTIFIER()!!.text!!
+    override fun visitFunction(ctx: LangParser.FunctionContext): Void? {
+        val functionName = ctx.IDENTIFIER()!!.text!!
         if (functionName != "println") {
             try {
                 context.addFunction(functionName, ctx)
@@ -58,10 +54,10 @@ class StatementVisitor(private var context: ExecutionContext = ExecutionContext(
      * Assigns value to the variable if last one exists, otherwise
      * exception with appropriate message will be thrown
      * */
-    override fun visitAssignment(ctx: LangParser.AssignmentContext?): Void? {
-        val name = ctx?.IDENTIFIER()?.text
+    override fun visitAssignment(ctx: LangParser.AssignmentContext): Void? {
+        val name = ctx.IDENTIFIER()?.text
         check(!(name == null || ctx.expression() == null)) {
-            "Parsing error at line: ${ctx?.start?.line}"
+            "Parsing error at line: ${ctx.start?.line}"
         }
         check(name in context.varAddresses) {
             "Can not set value to the undefined variable $name"
@@ -73,9 +69,9 @@ class StatementVisitor(private var context: ExecutionContext = ExecutionContext(
     /**
      * Process while statement
      * */
-    override fun visitWhile_expr(ctx: LangParser.While_exprContext?): Void? {
+    override fun visitWhile_expr(ctx: LangParser.While_exprContext): Void? {
         while (true) {
-            val conditionValue = ctx!!.expression().accept(ExpressionVisitor(context))
+            val conditionValue = ctx.expression().accept(ExpressionVisitor(context))
             if (conditionValue == 0) {
                 break
             }
@@ -92,8 +88,8 @@ class StatementVisitor(private var context: ExecutionContext = ExecutionContext(
     /**
      * Process if statement
      * */
-    override fun visitIf_expr(ctx: LangParser.If_exprContext?): Void? {
-        val conditionValue = ctx!!.expression().accept(ExpressionVisitor(context))
+    override fun visitIf_expr(ctx: LangParser.If_exprContext): Void? {
+        val conditionValue = ctx.expression().accept(ExpressionVisitor(context))
         val nextContext = context.copy()
         if (conditionValue == 1) {
             ctx.block_with_braces()[0].block().accept(BlockVisitor(nextContext))
@@ -110,8 +106,8 @@ class StatementVisitor(private var context: ExecutionContext = ExecutionContext(
      * Process of variable declaration and checks all conditions
      * which should be satisfied
      * */
-    override fun visitVariable(ctx: LangParser.VariableContext?): Void? {
-        val name = ctx!!.IDENTIFIER().text
+    override fun visitVariable(ctx: LangParser.VariableContext): Void? {
+        val name = ctx.IDENTIFIER().text
         var value = 0
         if (ctx.expression() != null) {
             value = ctx.expression().accept(ExpressionVisitor(context))

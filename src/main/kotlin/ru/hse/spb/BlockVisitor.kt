@@ -6,23 +6,13 @@ import ru.hse.spb.parser.LangParser
 /**
  * Visitor for evaluating the grammar block
  * */
-class BlockVisitor(): LangBaseVisitor<Void?>() {
-
-    private var context = ExecutionContext()
-
-    constructor(context: ExecutionContext): this() {
-        this.context = context
-    }
+class BlockVisitor(private var context: ExecutionContext = ExecutionContext()): LangBaseVisitor<Void?>() {
 
     /**
      * Visits every statement consistently until one of them returns a value
      * or until they run out
      * */
-    override fun visitBlock(ctx: LangParser.BlockContext?): Void? {
-        if (ctx == null) {
-            context.resultValue = 0
-            return null
-        }
+    override fun visitBlock(ctx: LangParser.BlockContext): Void? {
         for (s in ctx.statement()) {
             s.accept(StatementVisitor(context))
             if (context.resultValue != null) {

@@ -6,26 +6,20 @@ import ru.hse.spb.parser.LangParser
 /**
  * Visitor for evaluating expression
  * */
-class ExpressionVisitor(): LangBaseVisitor<Int>() {
-
-    private var context = ExecutionContext()
-
-    constructor(context: ExecutionContext): this() {
-        this.context = context
-    }
+class ExpressionVisitor(private var context: ExecutionContext = ExecutionContext()): LangBaseVisitor<Int>() {
 
     /**
      * Evaluates expression
      *
      * @return the result of evaluating accroding to the current address scope and math rule of evaluating
      * */
-    override fun visitExpression(ctx: LangParser.ExpressionContext?): Int {
-        if (ctx?.LPAREN() != null) {
+    override fun visitExpression(ctx: LangParser.ExpressionContext): Int {
+        if (ctx.LPAREN() != null) {
             check(ctx.middle != null) { "Parsing error at line ${ctx.start.line}" }
             return ctx.middle.accept(this)
         }
 
-        if (ctx?.IDENTIFIER()?.text != null) {
+        if (ctx.IDENTIFIER()?.text != null) {
             val address = context.varAddresses[ctx.IDENTIFIER().text]
             if (address != null && context.varValues.containsKey(address)) {
                 return context.varValues[address]!!
@@ -34,11 +28,11 @@ class ExpressionVisitor(): LangBaseVisitor<Int>() {
             }
         }
 
-        if (ctx?.LITERAL() != null) {
+        if (ctx.LITERAL() != null) {
             return ctx.LITERAL().text.toInt()
         }
 
-        if (ctx?.operator != null && ctx.left != null && ctx.right != null) {
+        if (ctx.operator != null && ctx.left != null && ctx.right != null) {
             val leftValue = ctx.left.accept(this)
             val rightValue = ctx.right.accept(this)
 
@@ -66,10 +60,10 @@ class ExpressionVisitor(): LangBaseVisitor<Int>() {
             }
         }
 
-        if (ctx?.function_call() != null) {
+        if (ctx.function_call() != null) {
             return ctx.function_call().accept(FunctionCallVisitor(context.copy()))
         }
 
-        throw IllegalStateException("Parsing error at line ${ctx?.getStart()?.line}")
+        throw IllegalStateException("Parsing error at line ${ctx.getStart()?.line}")
     }
 }

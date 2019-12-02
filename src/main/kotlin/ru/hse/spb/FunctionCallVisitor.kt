@@ -7,13 +7,7 @@ import java.lang.IllegalStateException
 /**
  * Visitor for processing of functions calling
  * */
-class FunctionCallVisitor(): LangBaseVisitor<Int>() {
-
-    private var context = ExecutionContext()
-
-    constructor(context: ExecutionContext): this() {
-        this.context = context
-    }
+class FunctionCallVisitor(private var context: ExecutionContext = ExecutionContext()): LangBaseVisitor<Int>() {
 
     /**
      * Handles the call of builtin function println and
@@ -31,8 +25,8 @@ class FunctionCallVisitor(): LangBaseVisitor<Int>() {
      *
      * @return the result of function calling
      * */
-    override fun visitFunction_call(ctx: LangParser.Function_callContext?): Int {
-        val functionName = ctx!!.IDENTIFIER()!!.text
+    override fun visitFunction_call(ctx: LangParser.Function_callContext): Int {
+        val functionName = ctx.IDENTIFIER()!!.text
 
         if (functionName == "println") {
             return visitPrintln(ctx)
