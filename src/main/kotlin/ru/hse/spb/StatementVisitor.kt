@@ -8,13 +8,7 @@ import java.lang.IllegalStateException
 /**
  * Visitor for evaluting statement
  */
-class StatementVisitor() : LangBaseVisitor<Void?>() {
-
-    private var context = ExecutionContext()
-
-    constructor(context: ExecutionContext) : this() {
-        this.context = context
-    }
+class StatementVisitor(private var context: ExecutionContext = ExecutionContext()) : LangBaseVisitor<Void?>() {
 
     /**
      * Chooses the type of statement and visit it
