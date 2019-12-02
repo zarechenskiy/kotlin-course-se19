@@ -1,23 +1,13 @@
 package ru.hse.spb
 
-class State(val parentState: State?) {
-    constructor() : this(null) {
-    }
+class State(private val parentState: State? = null) {
 
-    private val variables: MutableMap<String, Int> = mutableMapOf()
-    private val functions: MutableMap<String, Function<Int>> = mutableMapOf()
+    private val variables = mutableMapOf<String, Int>()
+    private val functions = mutableMapOf<String, Function<Int>>()
 
     var isReturned: Boolean = false
-        get() = field
-        set(value) {
-            field = value
-        }
 
     var returnValue: Int? = null
-        get() = field
-        set(value) {
-            field = value
-        }
 
     fun getFunc(name: String): Function<Int>? {
         return functions[name] ?: parentState?.getFunc(name)
@@ -36,7 +26,7 @@ class State(val parentState: State?) {
     }
 
     fun setVariable(name: String, value: Int) {
-        if (variables.contains(name)) {
+        if (name in variables) {
             variables[name] = value
             return
         }

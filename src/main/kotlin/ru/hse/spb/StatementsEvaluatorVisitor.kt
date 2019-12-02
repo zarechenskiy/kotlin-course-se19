@@ -8,12 +8,7 @@ import ru.hse.spb.parser.FunInterpreterParser
 class StatementsEvaluatorVisitor(funcs: Map<String, Function<Int>>) :
         FunInterpreterBaseVisitor<Any>() {
 
-    private var curState: State
-
-    init {
-        curState = State()
-        funcs.forEach { curState.addFunc(it.key, it.value) }
-    }
+    private var curState = State().apply {funcs.forEach {addFunc(it.key, it.value)}}
 
     override fun visitFile(ctx: FunInterpreterParser.FileContext) {
         ctx.block().accept(this)
@@ -194,7 +189,7 @@ class StatementsEvaluatorVisitor(funcs: Map<String, Function<Int>>) :
         return ctx.expression().accept(this)
     }
 
-    private inline fun lineNumberString(ctx: ParserRuleContext): String {
+    private fun lineNumberString(ctx: ParserRuleContext): String {
         return "line number ${ctx.start.line}"
     }
 }
