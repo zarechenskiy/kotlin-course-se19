@@ -132,7 +132,7 @@ class FplInterpreter(val env: FplEnv,
     private fun interpretBinary(binary: Binary): Int {
         val left = interpretExpr(binary.left)
         val right = interpretExpr(binary.right)
-        return binary.op.apply(left, right)
+        return binary.op(left, right)
     }
 
     /**
@@ -145,7 +145,7 @@ class FplInterpreter(val env: FplEnv,
         val arguments = funCall.arguments.map { interpretExpr(it) }
 
         // Look up in the builtins.
-        if (builtins.containsKey(funCall.identifier)) {
+        if (funCall.identifier in builtins) {
             val fn = builtins[funCall.identifier]
                     ?: throw RuntimeException("Builtin ${funCall.identifier} doesn't exist!")
             return fn(arguments.toIntArray())

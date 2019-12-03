@@ -1,7 +1,6 @@
 package ru.hse.spb
 
 import java.util.*
-import java.util.function.BinaryOperator
 
 data class FplTree(val statements: List<Statement>)
 
@@ -55,46 +54,24 @@ data class FunCall(val identifier: String, val arguments: List<Expr>) : Expr()
 data class Literal(val literal: Int) : Expr()
 data class Identifier(val identifier: String) : Expr()
 
-enum class BinaryOperation : BinaryOperator<Int> {
+enum class BinaryOperation(private val operation: (Int, Int) -> Int) : (Int, Int) -> Int {
     // Arithmetic operations
-    MULT {
-        override fun apply(a: Int, b: Int): Int = a * b
-    },
-    DIV {
-        override fun apply(a: Int, b: Int): Int = a / b
-    },
-    PLUS {
-        override fun apply(a: Int, b: Int): Int = a + b
-    },
-    MINUS {
-        override fun apply(a: Int, b: Int): Int = a - b
-    },
+    MULT({ a, b -> a * b }),
+    DIV({ a, b -> a / b }),
+    PLUS({ a, b -> a + b }),
+    MINUS({ a, b -> a - b }),
     // Logic operations
-    CONJ {
-        override fun apply(a: Int, b: Int): Int = (a.toBoolean() || b.toBoolean()).toInt()
-    },
-    DISJ {
-        override fun apply(a: Int, b: Int): Int = (a.toBoolean() && b.toBoolean()).toInt()
-    },
+    CONJ({ a, b -> (a.toBoolean() || b.toBoolean()).toInt() }),
+    DISJ({ a, b -> (a.toBoolean() && b.toBoolean()).toInt() }),
     // Compare
-    EQ {
-        override fun apply(a: Int, b: Int): Int = (a == b).toInt()
-    },
-    NEQ {
-        override fun apply(a: Int, b: Int): Int = (a != b).toInt()
-    },
-    GT {
-        override fun apply(a: Int, b: Int): Int = (a > b).toInt()
-    },
-    GE {
-        override fun apply(a: Int, b: Int): Int = (a >= b).toInt()
-    },
-    LT {
-        override fun apply(a: Int, b: Int): Int = (a < b).toInt()
-    },
-    LE {
-        override fun apply(a: Int, b: Int): Int = (a <= b).toInt()
-    };
+    EQ({ a, b -> (a == b).toInt() }),
+    NEQ({ a, b -> (a != b).toInt() }),
+    GT({ a, b -> (a > b).toInt() }),
+    GE({ a, b -> (a >= b).toInt() }),
+    LT({ a, b -> (a < b).toInt() }),
+    LE({ a, b -> (a <= b).toInt() });
+
+    override fun invoke(a: Int, b: Int): Int = operation(a, b)
 
     companion object {
         fun operatorToName(op: String): BinaryOperation = when (op) {
@@ -113,6 +90,4 @@ enum class BinaryOperation : BinaryOperator<Int> {
             else -> throw RuntimeException("No such an operator: $op")
         }
     }
-
 }
-
