@@ -7,15 +7,26 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import ru.hse.spb.parser.FunCallLexer
 import ru.hse.spb.parser.FunCallParser
+import java.io.ByteArrayOutputStream
 import java.io.PrintStream
-import java.lang.IllegalArgumentException
 
 class TestSource {
-    private fun execute(program: String): Int {
+    private fun execute(program: String, textOutput: String? = null): Int {
+        val savedStream = System.out
+        val stream = ByteArrayOutputStream()
+        System.setOut(PrintStream(stream))
+
         val lexer = FunCallLexer(CharStreams.fromString(program))
         val parser = FunCallParser(CommonTokenStream(lexer))
         val visitor = Visitor()
         parser.file().accept(visitor)
+
+        stream.flush()
+        if (textOutput != null) {
+            assertEquals(textOutput, String(stream.toByteArray()).trim())
+        }
+        System.setOut(savedStream)
+
         return visitor.stack.last()
     }
 
@@ -238,5 +249,57 @@ class TestSource {
                     |return a
         """.trimMargin())
         }
+    }
+
+    @Test
+    fun example1() {
+        execute("""
+            var a = 10
+            var b = 20
+            if (a > b) {
+                println(1)
+            } else {
+                println(0)
+            }
+        """.trimIndent(), "0")
+    }
+
+    @Test
+    fun example2() {
+        execute("""
+            fun fib(n) {
+                if (n <= 1) {
+                    return 1
+                }
+                return fib(n - 1) + fib(n - 2)
+            }
+
+            var i = 1
+            while (i <= 5) {
+                println(i, fib(i))
+                i = i + 1
+            }
+
+        """.trimIndent(), """1 1
+            |2 2
+            |3 3
+            |4 5
+            |5 8
+        """.trimMargin())
+    }
+
+    @Test
+    fun example3() {
+        execute("""
+            fun foo(n) {
+                fun bar(m) {
+                    return m + n
+                }
+
+                return bar(1)
+            }
+
+            println(foo(41))
+        """.trimIndent(), "42")
     }
 }

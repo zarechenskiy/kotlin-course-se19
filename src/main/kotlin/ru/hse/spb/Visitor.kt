@@ -1,11 +1,8 @@
 package ru.hse.spb
 
+import org.antlr.v4.runtime.ParserRuleContext
 import ru.hse.spb.parser.FunCallBaseVisitor
 import ru.hse.spb.parser.FunCallParser
-import java.lang.IllegalArgumentException
-import kotlin.reflect.KFunction
-import kotlin.reflect.full.declaredMemberFunctions
-import kotlin.reflect.full.declaredMemberProperties
 
 class Space(val parent: Space? = null) {
     private val functions = mutableMapOf<String, FunCallParser.FunctionContext>()
@@ -20,11 +17,11 @@ class Space(val parent: Space? = null) {
     }
 
     fun rewriteVariable(name: String, value: Int) {
-        if (variables.containsKey(name)) {
+        if (name in variables) {
             variables[name] = value
             return
         }
-        parent?.rewriteVariable(name, value) ?: throw IllegalArgumentException()
+        parent?.rewriteVariable(name, value) ?: throw IllegalArgumentException("No such variable: $name")
     }
 
     fun findVariable(name: String): Int? {
@@ -33,7 +30,7 @@ class Space(val parent: Space? = null) {
 
     fun addFunction(func: FunCallParser.FunctionContext) {
         val name = func.IDENTIFIER().text
-        require(findFunction(name) == null)
+        require(findFunction(name) == null) { "A function named $name must not exist" }
         functions[name] = func
     }
 
@@ -65,7 +62,6 @@ class Visitor : FunCallBaseVisitor<Unit>() {
         for (statement in ctx.statement()) {
             statement.accept(this)
             if (exit) {
-                exit = false
                 return
             }
         }
@@ -75,20 +71,19 @@ class Visitor : FunCallBaseVisitor<Unit>() {
     }
 
     override fun visitStatement(ctx: FunCallParser.StatementContext) {
-        val list = listOf(ctx.functionCall(),
+        val list = listOfNotNull(ctx.functionCall(),
                 ctx.assigment(),
-                ctx.derji(),
-                ctx.esli(),
-                ctx.poka(),
+                ctx.returnOp(),
+                ctx.ifOp(),
+                ctx.whileOp(),
                 ctx.variable(), ctx.function(),
-                ctx.expression()).filterNotNull()
+                ctx.expression())
         visit(list.single())
     }
 
     override fun visitFunctionCall(ctx: FunCallParser.FunctionCallContext) {
         val functionName = ctx.functionName()
-
-        val arguments = ctx.parameterList().toListArguments().map {
+        val arguments = ctx.parameterList().toParametersValues().map {
             it.accept(this)
             stack.pop()
         }
@@ -96,10 +91,13 @@ class Visitor : FunCallBaseVisitor<Unit>() {
             println(arguments.joinToString(" "))
             return
         }
-        val function = namespace.findFunction(functionName) ?: throw IllegalArgumentException()
+        val function = namespace.findFunction(functionName)
+                ?: throw IllegalArgumentException("No function named $functionName found")
         namespace = namespace.extend(function, arguments)
         function.blockWithBraces().accept(this)
-        namespace = namespace.parent ?: throw IllegalArgumentException()
+        exit = false
+        namespace = namespace.parent ?: throw IllegalArgumentException("Failed exit from function")
+
     }
 
     override fun visitVariable(ctx: FunCallParser.VariableContext) {
@@ -112,7 +110,7 @@ class Visitor : FunCallBaseVisitor<Unit>() {
         namespace.addVariable(ctx.IDENTIFIER().text, value)
     }
 
-    override fun visitDerji(ctx: FunCallParser.DerjiContext) {
+    override fun visitReturnOp(ctx: FunCallParser.ReturnOpContext) {
         visit(ctx.expression())
         exit = true
     }
@@ -120,6 +118,10 @@ class Visitor : FunCallBaseVisitor<Unit>() {
     override fun visitInnerExpression(ctx: FunCallParser.InnerExpressionContext) {
         if (ctx.value() != null) {
             visitValue(ctx.value())
+            return
+        }
+        if (ctx.functionCall() != null) {
+            visitFunctionCall(ctx.functionCall())
             return
         }
         visitExpression(ctx.expression())
@@ -135,7 +137,7 @@ class Visitor : FunCallBaseVisitor<Unit>() {
     override fun visitBlockWithBraces(ctx: FunCallParser.BlockWithBracesContext) {
         namespace = namespace.createChild()
         visitBlock(ctx.block())
-        namespace = namespace.parent ?: throw IllegalArgumentException()
+        namespace = namespace.parent ?: throw IllegalArgumentException("Failed exit braces block")
     }
 
     override fun visitFunction(ctx: FunCallParser.FunctionContext) {
@@ -143,14 +145,15 @@ class Visitor : FunCallBaseVisitor<Unit>() {
     }
 
     override fun visitExpression(ctx: FunCallParser.ExpressionContext) {
-        val currentOperation = listOf(ctx.binaryExperession(),
-                ctx.innerExpression(), ctx.functionCall()).filterNotNull().singleOrNull() ?: return
+        val currentOperation = listOfNotNull(ctx.binaryExperession(),
+                ctx.innerExpression(), ctx.functionCall()).singleOrNull() ?: return
         visit(currentOperation)
     }
 
     override fun visitValue(ctx: FunCallParser.ValueContext) {
         if (ctx.IDENTIFIER() != null) {
-            val value = namespace.findVariable(ctx.IDENTIFIER().text) ?: throw  IllegalArgumentException()
+            val value = namespace.findVariable(ctx.IDENTIFIER().text)
+                    ?: throw  IllegalArgumentException("No variable named ${ctx.IDENTIFIER().text} found")
             stack.add(value)
             return
         }
@@ -176,13 +179,13 @@ class Visitor : FunCallBaseVisitor<Unit>() {
             "!=" -> (left != right).toInt()
             ">=" -> (left >= right).toInt()
             "<=" -> (left <= right).toInt()
-            else -> throw IllegalArgumentException()
+            else -> throw IllegalArgumentException("Unknown operation ${ctx.binaryOperator().text}")
         }
         stack.add(result)
 
     }
 
-    override fun visitEsli(ctx: FunCallParser.EsliContext) {
+    override fun visitIfOp(ctx: FunCallParser.IfOpContext) {
 
         ctx.expression().accept(this)
         if (stack.pop().toBool()) {
@@ -193,7 +196,7 @@ class Visitor : FunCallBaseVisitor<Unit>() {
 
     }
 
-    override fun visitPoka(ctx: FunCallParser.PokaContext) {
+    override fun visitWhileOp(ctx: FunCallParser.WhileOpContext) {
         val condition = ctx.expression()
         while (true) {
             condition.accept(this)
@@ -207,12 +210,12 @@ class Visitor : FunCallBaseVisitor<Unit>() {
 }
 
 private fun FunCallParser.FunctionCallContext.functionName() = IDENTIFIER().text
-private fun FunCallParser.ParameterListContext.toListArguments(): List<FunCallParser.ExpressionContext> {
+private fun FunCallParser.ParameterListContext.toParametersValues(): List<ParserRuleContext> {
     var currentList = this
-    val result = mutableListOf<FunCallParser.ExpressionContext>()
+    val result = mutableListOf<ParserRuleContext>()
     var expression = currentList.expression()
     while (expression != null) {
-        result.add(currentList.expression())
+        result.add(expression)
         currentList = currentList.parameterList() ?: break
         expression = currentList.expression()
     }

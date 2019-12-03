@@ -4,7 +4,6 @@ import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import ru.hse.spb.parser.FunCallLexer
 import ru.hse.spb.parser.FunCallParser
-import java.io.File
 
 fun main(args: Array<String>) {
     val filename = args[0]

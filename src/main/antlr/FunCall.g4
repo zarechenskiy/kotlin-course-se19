@@ -31,15 +31,16 @@ value
 
 innerExpression
     : '(' expression ')'
+    | functionCall
     | value;
 
-poka
+whileOp
     : 'while' '(' expression ')' blockWithBraces;
 
-esli
+ifOp
     : 'if' '(' expression ')' blockWithBraces ('else' blockWithBraces)?;
 
-derji : 'return' expression;
+returnOp : 'return' expression;
 
 assigment : IDENTIFIER '=' expression;
 
@@ -62,10 +63,10 @@ statement
     | variable
     | function
     | expression
-    | poka
-    | esli
+    | whileOp
+    | ifOp
     | assigment
-    | derji
+    | returnOp
     ;
 
 binaryOperator
