@@ -17,7 +17,7 @@ class TestInterpreter {
         assert(identifier is Identifier && identifier.identifier == "a")
 
         val binaryExpression: Expression = BinaryExpression(Literal(1), Literal(2), BinaryOperator.PLUS)
-        assert(binaryExpression is BinaryExpression && binaryExpression.operator.apply(1, 2) == 3)
+        assert(binaryExpression is BinaryExpression && binaryExpression.operator(1, 2) == 3)
     }
 
     @Test

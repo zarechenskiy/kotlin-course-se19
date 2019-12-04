@@ -62,11 +62,11 @@ fun evaluate(statement: Statement, state: State): Int? {
 }
 
 fun evaluate(expression: Expression, state: State): Int {
-    when (expression) {
+    return when (expression) {
         is FunctionCall -> {
             if (expression.identifier == "println") {
-                println(expression.parameters.map { evaluate(it, state).toString() }.joinToString(" "))
-                return 0
+                println(expression.parameters.joinToString(" ") { evaluate(it, state).toString() })
+                0
             } else {
                 val function = state.getFunction(expression.identifier)
                 if (function.parameters.size != expression.parameters.size) {
@@ -74,18 +74,12 @@ fun evaluate(expression: Expression, state: State): Int {
                 }
                 val newState = state.enter()
                 function.parameters.zip(expression.parameters).map { (param, expr) -> newState.registerVariable(param, evaluate(expr, state)) }
-                return evaluate(function.body, newState) ?: 0
+                evaluate(function.body, newState) ?: 0
             }
         }
-        is BinaryExpression -> {
-            return expression.operator.apply(evaluate(expression.left, state), evaluate(expression.right, state))
-        }
-        is Identifier -> {
-            return state.getVariable(expression.identifier)
-        }
-        is Literal -> {
-            return expression.literal
-        }
+        is BinaryExpression -> expression.operator(evaluate(expression.left, state), evaluate(expression.right, state))
+        is Identifier -> state.getVariable(expression.identifier)
+        is Literal -> expression.literal
     }
 }
 
