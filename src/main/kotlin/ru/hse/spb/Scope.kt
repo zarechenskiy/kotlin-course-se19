@@ -15,15 +15,11 @@ class Scope<T>(private val parentScope: Scope<T>?, private var scopedType: Strin
     }
 
     private fun contains(identifier: String, context: ParserRuleContext): Boolean {
-        if (scoped.containsKey(identifier)) {
+        if (identifier in scoped) {
             return true
         }
 
-        if (parentScope == null) {
-            return false
-        }
-
-        return parentScope.contains(identifier, context)
+        return parentScope?.contains(identifier, context) ?: false
     }
 
     fun getScoped(identifier: String, context: ParserRuleContext): T? {

@@ -7,7 +7,8 @@ import ru.hse.spb.parser.ExpParser.*
 /**
  * Exception during compilation of the given input file
  */
-class CompileException(context: ParserRuleContext, message: String) : RuntimeException("Line ${context.start.line}: " + message)
+class CompileException(context: ParserRuleContext, message: String) :
+    RuntimeException("Line ${context.start.line}: " + message)
 
 /**
  * Rules for visiting all AST nodes of the input file
@@ -32,11 +33,17 @@ class Visitor(private var scopes: Scopes) : ExpBaseVisitor<Int?>() {
         return null
     }
 
-    override fun visitBlockWithBraces(context: BlockWithBracesContext): Int? {
+    private inline fun innerScope(body: () -> Unit) {
         val oldScopes = scopes
         scopes = Scopes(oldScopes)
-        visit(context.block())
+        body()
         scopes = oldScopes
+    }
+
+    override fun visitBlockWithBraces(context: BlockWithBracesContext): Int? {
+        innerScope {
+            visit(context.block())
+        }
 
         return null
     }
@@ -47,21 +54,19 @@ class Visitor(private var scopes: Scopes) : ExpBaseVisitor<Int?>() {
 
     override fun visitFunction(context: FunctionContext): Int? {
         val name = context.identifier().IDENTIFIER().text
-        val argumentNames = context.parameterNames().identifier().map {it.IDENTIFIER().text}
-        scopes.functionsScope.insert(name, {args ->
+        val argumentNames = context.parameterNames().identifier().map { it.IDENTIFIER().text }
+        scopes.functionsScope.insert(name, { args ->
             if (argumentNames.size != args.size) {
                 throw CompileException(context, "wrong number of parameters")
             }
 
-            val oldScopes = scopes
-            scopes = Scopes(oldScopes)
+            innerScope {
+                for (i in 0..argumentNames.lastIndex) {
+                    scopes.variablesScope.insert(argumentNames[i], args[i], context)
+                }
 
-            for (i in 0..argumentNames.lastIndex) {
-                scopes.variablesScope.insert(argumentNames[i], args[i], context)
+                visit(context.blockWithBraces())
             }
-
-            visit(context.blockWithBraces())
-            scopes = oldScopes
 
             returnCalled = false
             returnValue ?: 0
@@ -93,7 +98,7 @@ class Visitor(private var scopes: Scopes) : ExpBaseVisitor<Int?>() {
 
     override fun visitFunctionCall(context: FunctionCallContext): Int? {
         val function = scopes.functionsScope.getScoped(context.identifier().IDENTIFIER().text, context)
-        val arguments = context.arguments().expression().map{visit(it)}
+        val arguments = context.arguments().expression().map { visit(it) }
 
         if (function == null) {
             throw CompileException(context, "unknown function")
@@ -129,14 +134,15 @@ class Visitor(private var scopes: Scopes) : ExpBaseVisitor<Int?>() {
     }
 
     override fun visitNonBinaryExpression(context: NonBinaryExpressionContext): Int? {
-        if (context.functionCall() != null) {
-            return visit(context.functionCall())
-        } else if (context.identifier() != null) {
-            return scopes.variablesScope.getScoped(context.identifier().IDENTIFIER().text, context)
-        } else if (context.literal() != null) {
-            return context.literal().LITERAL().text.toInt()
-        } else {
-            return visit(context.expression())
+        return when {
+            context.functionCall() != null ->
+                visit(context.functionCall())
+            context.identifier() != null ->
+                scopes.variablesScope.getScoped(context.identifier().IDENTIFIER().text, context)
+            context.literal() != null ->
+                context.literal().LITERAL().text.toInt()
+            else ->
+                visit(context.expression())
         }
     }
 
@@ -154,16 +160,22 @@ class Visitor(private var scopes: Scopes) : ExpBaseVisitor<Int?>() {
             var operator = context.operatorFirstLevel()?.OPERATOR_FIRST_LEVEL()
 
             if (operator == null) {
-                if (context.operatorSecondLevel() != null) {
-                    operator = context.operatorSecondLevel().OPERATOR_SECOND_LEVEL()
-                } else if (context.operatorThirdLevel() != null) {
-                    operator = context.operatorThirdLevel().OPERATOR_THIRD_LEVEL()
-                } else if (context.operatorFourthLevel() != null) {
-                    operator = context.operatorFourthLevel().OPERATOR_FOURTH_LEVEL()
-                } else if (context.operatorFifthLevel() != null) {
-                    operator = context.operatorFifthLevel().OPERATOR_FIFTH_LEVEL()
-                } else {
-                    throw CompileException(context, "Unknown binary operator priority")
+                operator = when {
+                    context.operatorSecondLevel() != null -> {
+                        context.operatorSecondLevel().OPERATOR_SECOND_LEVEL()
+                    }
+                    context.operatorThirdLevel() != null -> {
+                        context.operatorThirdLevel().OPERATOR_THIRD_LEVEL()
+                    }
+                    context.operatorFourthLevel() != null -> {
+                        context.operatorFourthLevel().OPERATOR_FOURTH_LEVEL()
+                    }
+                    context.operatorFifthLevel() != null -> {
+                        context.operatorFifthLevel().OPERATOR_FIFTH_LEVEL()
+                    }
+                    else -> {
+                        throw CompileException(context, "Unknown binary operator priority")
+                    }
                 }
             }
 
