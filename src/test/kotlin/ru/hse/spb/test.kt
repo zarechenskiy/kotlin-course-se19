@@ -32,6 +32,7 @@ class LatexTest {
             |\usepackage[russian]{babel}
             |\begin{document}
             |  \begin{frame}[arg1=arg2]
+            |    \frametitle{frametitle}
             |    \begin{itemize}
             |      \begin{item}
             |        first text
@@ -64,6 +65,7 @@ class LatexTest {
             |\usepackage[russian, english]{babel}
             |\begin{document}
             |  \begin{frame}[arg1=arg2, arg3=arg4]
+            |    \frametitle{frametitle}
             |  \end{frame}
             |\end{document}
             |
@@ -105,6 +107,7 @@ class LatexTest {
             |\documentclass{article}
             |\begin{document}
             |  \begin{frame}
+            |    \frametitle{Test frame}
             |    \begin{math}
             |      1 + 2 = 3\\
             |      x^2 = y

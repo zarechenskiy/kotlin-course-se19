@@ -167,7 +167,7 @@ class Frame(builder: StringBuilder,
     override fun begin() {
         super.begin()
         if (frameTitle != null) {
-            FrameTitle(builder, nextIndent, frameTitle)
+            FrameTitle(builder, nextIndent, frameTitle).begin()
         }
     }
 }
